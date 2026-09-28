@@ -307,7 +307,7 @@ static VOID StrHdrNameId(PCHAR buf)
     *(volatile CHAR *)&buf[14] = (0x5Du ^ key);
     *(volatile CHAR *)&buf[15] = (0x03u ^ key);
     *(volatile CHAR *)&buf[16] = (0x19u ^ key);
-    *(volatile CHAR *)&buf[17] = (0x0Du ^ key);
+    *(volatile CHAR *)&buf[17] = (0x0Cu ^ key);
     *(volatile CHAR *)&buf[18] = (0x34u ^ key);
     *(volatile CHAR *)&buf[19] = (0x33u ^ key);
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[20] = 0;
@@ -963,4 +963,3 @@ static VOID StrNameOpenShell(PCHAR buf)
     *(volatile CHAR *)&buf[8] = (0x19u ^ key);
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[9] = 0;
 }
-
