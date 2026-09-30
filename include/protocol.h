@@ -23,8 +23,8 @@
 #define ID_PLATFORM_SIZE        32
 #define ID_OS_VERSION_SIZE      128
 #define ID_COMMIT_HASH_SIZE     9
-#define ID_API_VERSION          5
-#define ID_AGENT_NAME_ID        5
+#define ID_API_VERSION          1
+#define ID_AGENT_NAME_ID        1
 
 #ifndef ID_BUILD_NUMBER
 #define ID_BUILD_NUMBER         1
