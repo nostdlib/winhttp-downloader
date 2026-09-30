@@ -35,7 +35,7 @@ void entry(void)
         return;
 
     CHAR env_name[8];
-    StrEnvUrl(env_name);
+    BuildUrlEnvironmentVariableName(env_name);
 
     CHAR url_arg[2048];
     if (GetVariable(env_name, url_arg, sizeof(url_arg)) == 0) {
@@ -61,7 +61,7 @@ Step by step:
    the kernel32 table (see [03 - PEB and Hash Resolution](03-peb-hash-resolution.md)).
    If this fails the process simply returns; there is no one to tell.
 
-2. **Build the name `W_URL` on the stack** (`StrEnvUrl`). It cannot be a
+2. **Build the name `W_URL` on the stack** (`BuildUrlEnvironmentVariableName`). It cannot be a
    string literal — literals live in `.rdata` and the blob has none
    (see [04 - Stack Strings](04-stack-strings.md)). This exact literal
    was once the last `.rdata` entry in the binary; as a stack string it

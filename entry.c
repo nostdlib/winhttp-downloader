@@ -16,7 +16,7 @@ void entry(void)
         return;
 
     CHAR env_name[8];
-    StrEnvUrl(env_name);
+    BuildUrlEnvironmentVariableName(env_name);
 
     CHAR url_arg[2048];
     if (GetVariable(env_name, url_arg, sizeof(url_arg)) == 0) {

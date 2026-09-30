@@ -130,48 +130,58 @@ USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE])
     hwriter w = { headers, headers + IDENTITY_HEADERS_SIZE, 1 };
     CHAR piece[64];
 
-    StrHdrApiVersion(piece);  hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrNameId(piece);      hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrPlatform(piece);    hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrCaps(piece);        hw_puts(&w, piece);  hw_crlf(&w);
+    BuildApiVersionHeader(piece);  hw_puts(&w, piece);  hw_crlf(&w);
+    BuildAgentNameIdHeader(piece); hw_puts(&w, piece);  hw_crlf(&w);
+    BuildPlatformHeader(piece);    hw_puts(&w, piece);  hw_crlf(&w);
+    BuildClientFeaturesHeaderPrefix(piece);
+    hw_puts(&w, piece);
+
+    CHAR hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    CapabilityMask mask = BuildCapabilityMask();
+    
+    for (USIZE i = 0; w.ok && i < CAPABILITY_MASK_BYTES; i++) {
+        CHAR byte[3] = {hex[mask.Bits[i] >> 4], hex[mask.Bits[i] & 0xF], '\0'};
+        hw_puts(&w, byte);
+    }
+    hw_crlf(&w);
 
     CHAR guid_text[40];
     if (read_machine_guid_text(guid_text)) {
-        StrLblUuid(piece);
+        BuildMachineUuidHeaderPrefix(piece);
         hw_header(&w, piece, guid_text);
     }
 
     system_facts facts;
     collect_system_facts(&facts);
 
-    StrLblHostname(piece);
+    BuildHostnameHeaderPrefix(piece);
     if (facts.hostname[0] != '\0')
         hw_header(&w, piece, facts.hostname);
 
-    StrLblUsername(piece);
+    BuildUsernameHeaderPrefix(piece);
     if (facts.username[0] != '\0')
         hw_header(&w, piece, facts.username);
 
 #if defined(ENVIRONMENT_x86_64) || defined(__x86_64__) || defined(_M_X64)
-    StrValArchX64(piece);
+    BuildX64ArchitectureHeaders(piece);
 #elif defined(ENVIRONMENT_ARM64) || defined(__aarch64__) || defined(_M_ARM64)
-    StrValArchArm64(piece);
+    BuildArm64ArchitectureHeaders(piece);
 #else
-    StrValArchI386(piece);
+    BuildI386ArchitectureHeaders(piece);
 #endif
     hw_puts(&w, piece);  hw_crlf(&w);
 
-    StrLblOsVersion(piece);
+    BuildOsVersionHeaderPrefix(piece);
     if (facts.os_version[0] != '\0')
         hw_header(&w, piece, facts.os_version);
 
-    StrLblBuild(piece);
+    BuildOsBuildHeaderPrefix(piece);
     hw_puts(&w, piece);
     hw_u32_decimal(&w, (UINT32)ID_BUILD_NUMBER);
     hw_crlf(&w);
 
-    StrLblCommit(piece);
-    StrCommitDefault(piece + 32);
+    BuildCommitHeaderPrefix(piece);
+    BuildDefaultCommitHash(piece + 32);
     hw_header(&w, piece, piece + 32);
 
     if (!w.ok)

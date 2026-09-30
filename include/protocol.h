@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.h"
+
 #define CMD_OPEN_SHELL          0x01
 #define CMD_WRITE_SHELL         0x02
 #define CMD_READ_SHELL          0x03
@@ -13,6 +15,36 @@
 #define CMD_GET_SCREENSHOT      0x09
 #define CMD_EXIT                0x0A
 
+#define CAPABILITY_MASK_BYTES   8
+
+#ifndef SUPPORT_SHELL
+#define SUPPORT_SHELL            1
+#endif
+
+typedef enum {
+	Capability_Shell = 0,
+} CapabilityBit;
+
+typedef struct {
+	UINT8 Bits[CAPABILITY_MASK_BYTES];
+} CapabilityMask;
+
+
+static inline VOID SetCapability(CapabilityMask *mask, CapabilityBit bit, int supported)
+{
+	if (supported) {
+		USIZE b = (USIZE)bit;
+		mask->Bits[b / 8] |= (UINT8)(1u << (b % 8));
+	}
+}
+
+static inline CapabilityMask BuildCapabilityMask(VOID)
+{
+	CapabilityMask mask = {0};
+	SetCapability(&mask, Capability_Shell, SUPPORT_SHELL);
+	return mask;
+}
+
 #define STATUS_OK               0
 #define STATUS_ERROR            1
 
@@ -23,8 +55,8 @@
 #define ID_PLATFORM_SIZE        32
 #define ID_OS_VERSION_SIZE      128
 #define ID_COMMIT_HASH_SIZE     9
-#define ID_API_VERSION          1
-#define ID_AGENT_NAME_ID        5
+#define AGENT_API_VERSION       1
+#define AGENT_NAME_ID        5
 
 #ifndef ID_BUILD_NUMBER
 #define ID_BUILD_NUMBER         1
