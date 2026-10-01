@@ -1,4 +1,5 @@
 #include "picfixup.h"
+#include "djb2.h"
 
 #if defined(ENVIRONMENT_I386) && defined(LOGGING_ENABLED)
 
@@ -17,8 +18,8 @@ VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
     UINT32 scratch = 0;
 
     pVirtualProtect = (BOOL (WINAPI *)(PVOID, SIZE_T, UINT32, UINT32 *))
-        ResolveExportByHash(GetModuleHandleFromPEB(Hash((WCHAR[]){L'k', L'e', L'r', L'n', L'e', L'l', L'3', L'2', L'.', L'd', L'l', L'l', L'\0'})), 
-                                                   Hash((WCHAR[]){L'V', L'i', L'r', L't', L'u', L'a', L'l', L'P', L'r', L'o', L't', L'e', L'c', L't', L'\0'}));
+        ResolveFromModuleByHash(Hash((WCHAR[]){L'k', L'e', L'r', L'n', L'e', L'l', L'3', L'2', L'.', L'd', L'l', L'l', L'\0'}), 
+                                Hash((WCHAR[]){L'V', L'i', L'r', L't', L'u', L'a', L'l', L'P', L'r', L'o', L't', L'e', L'c', L't', L'\0'}));
     if (pVirtualProtect == NULL)
         return;
 
