@@ -1,16 +1,16 @@
 #include "string.h"
 #include "types.h"
 
-__SIZE_TYPE__ strlen(const CHAR *s) {
-    SIZE_T len = 0;
+USIZE strlen(const CHAR *s) {
+    USIZE len = 0;
     while (s[len] != '\0') {
         len++;
     }
     return len;
 }
 
-__SIZE_TYPE__ wcslen(const WCHAR *s) {
-    SIZE_T len = 0;
+USIZE wcslen(const WCHAR *s) {
+    USIZE len = 0;
     while (s[len] != L'\0') {
         len++;
     }

@@ -1,11 +1,22 @@
 #include "memory.h"
 
-void *memset(void *dest, int value, __SIZE_TYPE__ count)
+void *memset(void *dest, int value, USIZE count)
 {
     volatile unsigned char *p = (volatile unsigned char *)dest;
 
     while (count--)
         *p++ = (unsigned char)value;
+
+    return dest;
+}
+
+void *memcpy(void *dest, const void *src, USIZE count)
+{
+    volatile unsigned char *d = (volatile unsigned char *)dest;
+    const volatile unsigned char *s = (const volatile unsigned char *)src;
+
+    while (count--)
+        *d++ = *s++;
 
     return dest;
 }
