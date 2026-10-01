@@ -47,28 +47,12 @@ static inline void write_ascii_field(unsigned char *buf, int *pos, const char *s
     *pos = start + width;
 }
 
-static inline void hw_putc(hwriter *w, CHAR c)
+static inline void hwriter_write(hwriter *w, const CHAR *text)
 {
-    if (!w->ok || w->cur >= w->end) { w->ok = 0; return; }
-    *w->cur++ = c;
-}
-
-static inline void hw_puts(hwriter *w, const CHAR *s)
-{
-    while (*s != '\0') hw_putc(w, *s++);
-}
-
-static inline void hw_crlf(hwriter *w)
-{
-    hw_putc(w, '\r');
-    hw_putc(w, '\n');
-}
-
-static inline void hw_header(hwriter *w, const CHAR *label, const CHAR *value)
-{
-    hw_puts(w, label);
-    hw_puts(w, value);
-    hw_crlf(w);
+    while (*text != '\0') {
+        if (!w->ok || w->cur >= w->end) { w->ok = 0; return; }
+        *w->cur++ = *text++;
+    }
 }
 
 static inline void hw_u32_decimal(hwriter *w, UINT32 value)
@@ -79,6 +63,8 @@ static inline void hw_u32_decimal(hwriter *w, UINT32 value)
         rev[n++] = (CHAR)((value % 10) + '0');
         value /= 10;
     } while (value != 0);
-    while (n > 0)
-        hw_putc(w, rev[--n]);
+    while (n > 0) {
+        CHAR digit[2] = {rev[--n], '\0'};
+        hwriter_write(w, digit);
+    }
 }

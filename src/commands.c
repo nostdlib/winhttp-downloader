@@ -130,37 +130,45 @@ USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE])
     hwriter w = { headers, headers + IDENTITY_HEADERS_SIZE, 1 };
     CHAR piece[64];
 
-    BuildApiVersionHeader(piece);  hw_puts(&w, piece);  hw_crlf(&w);
-    BuildAgentNameIdHeader(piece); hw_puts(&w, piece);  hw_crlf(&w);
-    BuildPlatformHeader(piece);    hw_puts(&w, piece);  hw_crlf(&w);
+    BuildApiVersionHeader(piece);  hwriter_write(&w, piece);  hwriter_write(&w, "\r\n");
+    BuildAgentNameIdHeader(piece); hwriter_write(&w, piece);  hwriter_write(&w, "\r\n");
+    BuildPlatformHeader(piece);    hwriter_write(&w, piece);  hwriter_write(&w, "\r\n");
     BuildClientFeaturesHeaderPrefix(piece);
-    hw_puts(&w, piece);
+    hwriter_write(&w, piece);
 
     CHAR hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     CapabilityMask mask = BuildCapabilityMask();
     
     for (USIZE i = 0; w.ok && i < CAPABILITY_MASK_BYTES; i++) {
         CHAR byte[3] = {hex[mask.Bits[i] >> 4], hex[mask.Bits[i] & 0xF], '\0'};
-        hw_puts(&w, byte);
+        hwriter_write(&w, byte);
     }
-    hw_crlf(&w);
+    hwriter_write(&w, "\r\n");
 
     CHAR guid_text[40];
     if (read_machine_guid_text(guid_text)) {
         BuildMachineUuidHeaderPrefix(piece);
-        hw_header(&w, piece, guid_text);
+        hwriter_write(&w, piece);
+        hwriter_write(&w, guid_text);
+        hwriter_write(&w, "\r\n");
     }
 
     system_facts facts;
     collect_system_facts(&facts);
 
     BuildHostnameHeaderPrefix(piece);
-    if (facts.hostname[0] != '\0')
-        hw_header(&w, piece, facts.hostname);
+    if (facts.hostname[0] != '\0') {
+        hwriter_write(&w, piece);
+        hwriter_write(&w, facts.hostname);
+        hwriter_write(&w, "\r\n");
+    }
 
     BuildUsernameHeaderPrefix(piece);
-    if (facts.username[0] != '\0')
-        hw_header(&w, piece, facts.username);
+    if (facts.username[0] != '\0') {
+        hwriter_write(&w, piece);
+        hwriter_write(&w, facts.username);
+        hwriter_write(&w, "\r\n");
+    }
 
 #if defined(ENVIRONMENT_x86_64) || defined(__x86_64__) || defined(_M_X64)
     BuildX64ArchitectureHeaders(piece);
@@ -169,20 +177,25 @@ USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE])
 #else
     BuildI386ArchitectureHeaders(piece);
 #endif
-    hw_puts(&w, piece);  hw_crlf(&w);
+    hwriter_write(&w, piece);  hwriter_write(&w, "\r\n");
 
     BuildOsVersionHeaderPrefix(piece);
-    if (facts.os_version[0] != '\0')
-        hw_header(&w, piece, facts.os_version);
+    if (facts.os_version[0] != '\0') {
+        hwriter_write(&w, piece);
+        hwriter_write(&w, facts.os_version);
+        hwriter_write(&w, "\r\n");
+    }
 
     BuildOsBuildHeaderPrefix(piece);
-    hw_puts(&w, piece);
+    hwriter_write(&w, piece);
     hw_u32_decimal(&w, (UINT32)ID_BUILD_NUMBER);
-    hw_crlf(&w);
+    hwriter_write(&w, "\r\n");
 
     BuildCommitHeaderPrefix(piece);
     BuildDefaultCommitHash(piece + 32);
-    hw_header(&w, piece, piece + 32);
+    hwriter_write(&w, piece);
+    hwriter_write(&w, piece + 32);
+    hwriter_write(&w, "\r\n");
 
     if (!w.ok)
         return 0;

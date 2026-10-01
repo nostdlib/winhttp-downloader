@@ -57,7 +57,7 @@ static inline CapabilityMask BuildCapabilityMask(VOID)
 #define ID_OS_VERSION_SIZE      128
 #define ID_COMMIT_HASH_SIZE     9
 #define AGENT_API_VERSION       1
-#define AGENT_NAME_ID        5
+#define AGENT_NAME_ID           5
 
 #ifndef ID_BUILD_NUMBER
 #define ID_BUILD_NUMBER         1
