@@ -23,6 +23,7 @@
 
 typedef enum {
 	Capability_Shell = 0,
+    CapabilityBitCount
 } CapabilityBit;
 
 typedef struct {
