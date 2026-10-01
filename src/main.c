@@ -7,6 +7,7 @@
 #include "stackstrings.h"
 #include "commands.h"
 #include "string.h"
+#include "wire.h"
 
 static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived);
 
@@ -181,13 +182,14 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
         }
 
         unsigned char opcode = (msg.length > 0) ? msg.data[0] : 0xFF;
-        unsigned int corr_id = (msg.length >= 5) ? read_u32_le_at(msg.data, 1) : 0;
+        unsigned int corr_id = (msg.length >= 5) ? ReadU32LE(msg.data, 1) : 0;
 
         if (msg.truncated) {
             unsigned char status_error[8];
             MemoryZero(status_error, sizeof(status_error));
 
-            write_u32_le_at(status_error, 4, corr_id);
+            int pos = 4;
+            WriteU32LE(status_error, &pos, corr_id);
             err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, status_error, sizeof(status_error));
             
             if (err == NO_ERROR) {
@@ -227,7 +229,8 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
             unsigned char status_error[8];
             MemoryZero(status_error, sizeof(status_error));
 
-            write_u32_le_at(status_error, 4, corr_id);
+            int pos = 4;
+            WriteU32LE(status_error, &pos, corr_id);
             err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, status_error, sizeof(status_error));
             if (err == NO_ERROR) {
                 LOG_INFO("Command 0x%02x not implemented - replied status 1 (corr=%u)", opcode, corr_id);
