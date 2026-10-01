@@ -1,10 +1,10 @@
 #include "logger.h"
 #include "types.h"
+#include "djb2.h"
 
 #ifdef LOGGING_ENABLED
 
 #include "system.h"
-#include "apihash.h"
 #include "wintypes.h"
 
 #define STD_OUTPUT_HANDLE  ((DWORD)-11)
@@ -16,10 +16,12 @@ void log_write(const char* buffer, unsigned long len)
 
     HANDLE (WINAPI *pGetStdHandle)(DWORD) =
         (HANDLE (WINAPI *)(DWORD))
-        ResolveFromModuleByHash(HASH_MOD_KERNEL32, HASH_GETSTDHANDLE);
+        ResolveFromModuleByHash(Hash((WCHAR[]){L'k', L'e', L'r', L'n', L'e', L'l', L'3', L'2', L'.', L'd', L'l', L'l', L'\0'}), 
+                            Hash((WCHAR[]){L'G', L'e', L't', L'S', L't', L'd', L'H', L'a', L'n', L'd', L'l', L'e', L'\0'}));
     BOOL (WINAPI *pWriteFile)(HANDLE, const void *, DWORD, DWORD *, PVOID) =
         (BOOL (WINAPI *)(HANDLE, const void *, DWORD, DWORD *, PVOID))
-        ResolveFromModuleByHash(HASH_MOD_KERNEL32, HASH_WRITEFILE);
+        ResolveFromModuleByHash(Hash((WCHAR[]){L'k', L'e', L'r', L'n', L'e', L'l', L'3', L'2', L'.', L'd', L'l', L'l', L'\0'}), 
+                            Hash((WCHAR[]){L'W', L'r', L'i', L't', L'e', L'F', L'i', L'l', L'e', L'\0'}));
 
     if (pGetStdHandle == NULL || pWriteFile == NULL)
         return;

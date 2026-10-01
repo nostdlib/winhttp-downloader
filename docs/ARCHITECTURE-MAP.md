@@ -47,7 +47,6 @@ Arrows point downward; nothing includes upward.
 
 ```
 entry.c ──────────────┐
-src/stack_probes.c ───┤
 src/main.c ───────────┤→ system_facts ─────────────────────┐
                       │→ transport ─→ winhttp_api ─────────┤
                       │→ shell ────────────────────────────┤→ kernel32 ─┐
@@ -88,8 +87,6 @@ panel sends: [0x03][corrId][shellId:8]
 entry.c                    entry(): PEB env → agent_main → ExitProcess.
                            MUST be the first link object (blob byte 0).
 src/
-  stack_probes.c           __chkstk/__alloca asm, 3 arches. Own file so
-                           top-level asm can't precede entry() in .text.
   main.c                   agent_main (redial loop, backoff), run_session
                            (connect/serve), v3 corrId handlers, dispatch.
   transport.c              ws_send / ws_receive (fragment assembly, truncation
@@ -116,7 +113,6 @@ include/
   wintypes.h               Windows-ish structs (UNICODE_STRING, OSVERSIONINFOW,
                            SECURITY_ATTRIBUTES, STARTUPINFOW …).
   protocol.h               opcodes, statuses, sizes, exit codes.
-  apihash.h                every precomputed module/export hash.
   stackstrings.h           the string dictionary: XOR builders, volatile
                            stores (the .rdata fight lives here).
   peb.h / system.h / …     one header per module, minimal surface.
