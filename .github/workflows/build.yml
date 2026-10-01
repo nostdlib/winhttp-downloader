@@ -69,14 +69,9 @@ jobs:
       # honor them all), plus the baked identity metadata (build number +
       # commit hash) the panel displays.
       #
-      # Two rules this build MUST keep (both were broken here before and
-      # caught live, not by review):
-      #   1. NO -mno-stack-arg-probe / -fno-stack-check. Those forbid the
-      #      __chkstk stack-probe calls the >4KB frames need; entry.c ships
-      #      the probe implementations for all three arches - the compiler
-      #      just has to be allowed to call them. Without probes the exe
-      #      segfaults on its first big frame (proven: the preview-release
-      #      x86_64 exe crashed exactly there).
+      # Two rules this build MUST keep:
+      #   1. -mno-stack-arg-probe prevents freestanding builds from emitting
+      #      unresolved __chkstk helpers; large buffers use static storage.
       #   2. The .bin is cut with --only-section=.text: plain -O binary
       #      copies the whole PE image, so the blob starts with the "MZ"
       #      header and entry is NOT at offset 0 - any loader jumps to
@@ -98,7 +93,7 @@ jobs:
             rm -rf obj
             mkdir -p obj
             ${{ matrix.triple }}-gcc -O2 -Iinclude $DEFS \
-              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -DID_BUILD_NUMBER="$BUILD_NUMBER" \
               -DAGENT_COMMIT_HASH="\"$COMMIT_HASH\"" \
               -c \
@@ -120,7 +115,7 @@ jobs:
               PICDATA="-Wl,/merge:.picdata=.text"
             fi
             ${{ matrix.triple }}-gcc -O2 -s -nostdlib -Iinclude $DEFS \
-              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -e entry \
               -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text $PICDATA \
               -o "$EXE" "${objects[@]}"

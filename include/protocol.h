@@ -64,11 +64,11 @@ static inline CapabilityMask BuildCapabilityMask(VOID)
 #endif
 
 #define SHELL_POOL_SIZE         256
-#define SHELL_READ_CHUNK        65536
+#define SHELL_READ_CHUNK        512
 
-#define RECV_FRAGMENT_SIZE      65536
+#define RECV_FRAGMENT_SIZE      512
 
-#define MAX_MESSAGE_SIZE        65536
+#define MAX_MESSAGE_SIZE        512
 
 #define HEXDUMP_LIMIT           64
 

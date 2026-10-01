@@ -17,7 +17,7 @@ enforces them on three architectures.
 ```
 gcc -O2 -s -nostdlib -Iinclude \
   -fno-asynchronous-unwind-tables -fno-ident -fno-jump-tables \
-  -fno-vectorize -fno-slp-vectorize -e entry \
+  -fno-vectorize -fno-slp-vectorize -mno-stack-arg-probe -e entry \
   -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text \
   -o minimal_agent.exe obj/entry.o <rest of objects>
 ```
