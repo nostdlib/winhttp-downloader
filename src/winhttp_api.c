@@ -15,7 +15,7 @@ static PVOID GetWinHttp()
         return NULL;
 
     WCHAR nameBuf[12];
-    StrWinhttp(nameBuf);
+    BuildWinHttpDllName(nameBuf);
 
     UNICODE_STRING name;
     name.Length        = STRLEN_BYTES_WINHTTP;

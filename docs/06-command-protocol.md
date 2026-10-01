@@ -150,10 +150,8 @@ Three cursor-style writers, header-only because they are three lines
 each:
 
 ```c
-write_u32_le(buf, &pos, value)      // append 4 bytes little-endian
-write_u64_le(buf, &pos, value)      // append 8
-write_u32_le_at(buf, off, value)    // write at a FIXED offset — the
-                                    // corrId echo at reply offset 4
+WriteU32LE(buf, &pos, value)      // append 4 bytes little-endian
+WriteU64LE(buf, &pos, value)      // append 8
 ```
 
 The little-endian byte-by-byte loops look naive next to a cast — they

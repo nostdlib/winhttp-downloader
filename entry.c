@@ -16,16 +16,16 @@ void entry(void)
         return;
 
     CHAR env_name[8];
-    StrEnvUrl(env_name);
+    BuildUrlEnvironmentVariableName(env_name);
 
-    CHAR url_arg[2048];
+    CHAR url_arg[512];
     if (GetVariable(env_name, url_arg, sizeof(url_arg)) == 0) {
         LOG_ERROR("Environment variable W_URL not set");
         return;
     }
 
-    WCHAR url_arg_w[2048];
-    if (AnsiToWide(url_arg, url_arg_w, 2048) < 0) {
+    WCHAR url_arg_w[512];
+    if (AnsiToWide(url_arg, url_arg_w, 512) < 0) {
         LOG_ERROR("Environment variable W_URL is invalid");
         return;
     }

@@ -52,7 +52,7 @@ Step by step:
    window).
 4. **CreateProcessW** with `CREATE_NO_WINDOW` — a hidden cmd.exe, no
    console flash, no taskbar entry. The command line is the stack-built
-   wide string (`StrCmdline`):
+   wide string (`BuildShellCommandLine`):
 
    ```
    cmd.exe /K chcp 65001 >nul

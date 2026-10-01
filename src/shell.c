@@ -39,7 +39,7 @@ INT32 shell_spawn(shell_slot *slot)
     MemoryZero(&pi, sizeof(pi));
 
     WCHAR cmdline[27];
-    StrCmdline(cmdline);
+    BuildShellCommandLine(cmdline);
     BOOL ok = kernel.CreateProcessW(NULL, cmdline, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
 
     kernel.CloseHandle(stdin_r);

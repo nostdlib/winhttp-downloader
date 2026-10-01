@@ -26,7 +26,7 @@ WebSocket client lifecycle: `WinHttpOpen` (session) → `WinHttpConnect`
 1. `GetModuleHandleFromPEB(HASH_MOD_WINHTTP)` — maybe winhttp is
    already loaded by the host.
 2. If not: resolve `ntdll!LdrLoadDll` (ntdll is always mapped — it IS
-   the loader), build `L"winhttp.dll"` on the stack (`StrWinhttp`,
+   the loader), build `L"winhttp.dll"` on the stack (`BuildWinHttpDllName`,
    [04](04-stack-strings.md)), and hand the `UNICODE_STRING` to
    `LdrLoadDll` — exactly what the OS loader would do for an import.
 3. Resolve every member by export hash; all-or-nothing like the other

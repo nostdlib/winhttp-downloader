@@ -27,7 +27,7 @@ Each string gets a builder function in `stackstrings.h`. The narrow
 ("ANSI") form:
 
 ```c
-static VOID StrMachineGuid(PCHAR buf)
+static VOID BuildMachineGuidValueName(PCHAR buf)
 {
     volatile UINT32 key = 0x5D;
     *(volatile CHAR *)&buf[0] = (0x10u ^ key);   /* 'M' */
