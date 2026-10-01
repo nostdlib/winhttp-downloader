@@ -10,7 +10,6 @@ runtime. This chapter is the machinery that does it.
 - `src/peb.c` + `include/peb.h` — TEB/PEB access, the module walk
 - `src/system.c` + `include/system.h` — PE export-table resolve
 - `src/djb2.c` + `include/djb2.h` — the hash
-- `include/apihash.h` — every precomputed hash constant
 - `src/environment.c` — reading env vars through the PEB
 - `src/kernel32.c`, `src/ntdll.c`, `src/advapi.c` — the per-DLL tables
 
@@ -133,9 +132,6 @@ UINT64 Hash(const WCHAR *str) {
 - **64-bit** — a 32-bit djb2 collides uncomfortably often across a
   DLL's full export list; 64-bit makes a collision astronomically
   unlikely for the handful of names we resolve.
-
-`include/apihash.h` holds every constant this needs, **precomputed at
-table-build time**:
 
 ```c
 #define HASH_MOD_KERNEL32   0xD537E9367040EE75ULL

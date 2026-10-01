@@ -74,7 +74,7 @@ translation unit per topic; a header never pulls a module it doesn't need.
 Read the codebase in this order. Each step builds on the previous one.
 
 ### 1. Where a process starts without a runtime
-**Read:** `entry.c` (34 lines), `src/stack_probes.c` (63 lines)
+**Read:** `entry.c` (34 lines)
 
 Why there is no `main()`, what `-nostdlib -e entry` really means, and why
 `entry.o` must be the **first object on the link line** — the single rule
@@ -82,7 +82,7 @@ that decides whether the `.bin` blob lives or dies.
 → [02 - Entry and Stack Probes](02-entry-and-probes.md)
 
 ### 2. Finding functions without imports
-**Read:** `src/peb.c`, `include/peb.h`, `src/system.c`, `include/apihash.h`
+**Read:** `src/peb.c`, `include/peb.h`, `src/system.c`
 
 How the agent walks its own PEB to find loaded DLLs, and parses PE export
 tables to resolve every OS call by a precomputed name hash. Zero import
@@ -152,7 +152,6 @@ understand them, every oddity in the code stops being odd:
 | File | Lines | What it owns |
 |---|---|---|
 | `entry.c` | 34 | `entry()` — PEB env read → `agent_main` → `ExitProcess`. Link-order head |
-| `src/stack_probes.c` | 63 | `__chkstk`/`__alloca` asm (x86_64 / i386 / aarch64) |
 | `src/main.c` | 396 | dial/serve/redial loop; v3 command handlers |
 | `src/transport.c` | 51 | `ws_send` / `ws_receive` (fragment assembly) |
 | `src/shell.c` | 143 | the cmd.exe pool |
@@ -170,7 +169,6 @@ understand them, every oddity in the code stops being odd:
 | `src/memory.c` | 26 | MemoryZero / MemoryCopy / freestanding memset |
 | `src/logger.c` | 38 | printf `LOG_INFO`/`LOG_ERROR` macros → WriteFile(stdout) |
 | `include/stackstrings.h` | 964 | the string dictionary (XOR builders) |
-| `include/apihash.h` | 42 | precomputed djb2 constants for every name used |
 | `include/protocol.h` | 46 | opcodes, statuses, limits, exit codes |
 | `include/types.h` | 145 | the whole type dictionary (no SDK headers) |
 | `include/wintypes.h` | 61 | Windows-ish structs (UNICODE_STRING, SECURITY_ATTRIBUTES…) |
