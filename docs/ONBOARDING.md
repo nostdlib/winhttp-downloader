@@ -47,23 +47,23 @@ only what it includes, and the dependency graph flows one way — from the
 outer protocol (main) down to the hardware facts (peb).
 
 ```
-entry.cpp ─→ agent_main (main.cpp)
+entry.cc ─→ agent_main (main.cc)
               │
               ├─ run_session: WinHTTP connect + identity + serve loop
-              │     ├─ transport.cpp        WebSocket send/receive
-              │     ├─ shell.cpp            cmd.exe pool (OpenShell et al.)
-              │     └─ commands.cpp         shell command handlers
+              │     ├─ transport.cc        WebSocket send/receive
+              │     ├─ shell.cc            cmd.exe pool (OpenShell et al.)
+              │     └─ commands.cc         shell command handlers
               │
               └─ supporting cast, resolved from left to right:
-                    system_facts.cpp → advapi/ntdll/kernel32 tables
-                    environment.cpp  → peb.cpp (env block)
-                    winhttp_api.cpp  → ntdll!LdrLoadDll bootstrap
-                    all tables       → system.cpp (PE export resolve)
-                    system.cpp       → peb.cpp (module list) + djb2.cpp
-                    strings/mem      → string.cpp / memory.cpp / stackstrings.h
+                    system_facts.cc → advapi/ntdll/kernel32 tables
+                    environment.cc  → peb.cc (env block)
+                    winhttp_api.cc  → ntdll!LdrLoadDll bootstrap
+                    all tables       → system.cc (PE export resolve)
+                    system.cc       → peb.cc (module list) + djb2.cc
+                    strings/mem      → string.cc / memory.cc / stackstrings.h
 ```
 
-Module count: **18 .cpp files + 21 headers, ~3.8k lines total** (a third of
+Module count: **18 .cc files + 21 headers, ~3.8k lines total** (a third of
 that is `stackstrings.h` — machine-generated XOR string builders). One
 translation unit per topic; a header never pulls a module it doesn't need.
 
@@ -74,7 +74,7 @@ translation unit per topic; a header never pulls a module it doesn't need.
 Read the codebase in this order. Each step builds on the previous one.
 
 ### 1. Where a process starts without a runtime
-**Read:** `entry.cpp` (34 lines)
+**Read:** `entry.cc` (34 lines)
 
 Why there is no `main()`, what `-nostdlib -e entry` really means, and why
 `entry.o` must be the **first object on the link line** — the single rule
@@ -82,7 +82,7 @@ that decides whether the `.bin` blob lives or dies.
 → [02 - Entry and Stack Probes](02-entry-and-probes.md)
 
 ### 2. Finding functions without imports
-**Read:** `src/peb.cpp`, `include/peb.h`, `src/system.cpp`
+**Read:** `src/peb.cc`, `include/peb.h`, `src/system.cc`
 
 How the agent walks its own PEB to find loaded DLLs, and parses PE export
 tables to resolve every OS call by a precomputed name hash. Zero import
@@ -100,7 +100,7 @@ on the traps.
 → [04 - Stack Strings](04-stack-strings.md)
 
 ### 4. The wire
-**Read:** `src/transport.cpp`, `src/winhttp_api.cpp`
+**Read:** `src/transport.cc`, `src/winhttp_api.cc`
 
 WinHTTP resolved at runtime (mapped via `LdrLoadDll`, never imported), the
 WebSocket upgrade carrying the agent's identity, and the v3 command framing
@@ -109,7 +109,7 @@ with correlation ids.
 [06 - Command Protocol](06-command-protocol.md)
 
 ### 5. The shell machine
-**Read:** `src/shell.cpp`
+**Read:** `src/shell.cc`
 
 A pool of 256 hidden `cmd.exe` children behind pipe pairs, non-blocking
 drains, teardown on death. The only capability the agent advertises — and
@@ -151,23 +151,23 @@ understand them, every oddity in the code stops being odd:
 
 | File | Lines | What it owns |
 |---|---|---|
-| `entry.cpp` | 34 | `entry()` — PEB env read → `agent_main` → `ExitProcess`. Link-order head |
-| `src/main.cpp` | 396 | dial/serve/redial loop; v3 command handlers |
-| `src/transport.cpp` | 51 | `ws_send` / `ws_receive` (fragment assembly) |
-| `src/shell.cpp` | 143 | the cmd.exe pool |
-| `src/commands.cpp` | 150 | shell handlers |
-| `src/system_facts.cpp` | 57 | hostname / username / OS version |
-| `src/environment.cpp` | 73 | `GetVariable` — walk the PEB environment block |
-| `src/winhttp_api.cpp` | 88 | LdrLoadDll(winhttp.dll) + table resolve |
-| `src/ntdll.cpp` | 17 | ntdll table (`LdrLoadDll`, `RtlGetVersion`) |
-| `src/kernel32.cpp` | 63 | kernel32 table (15 exports) |
-| `src/advapi.cpp` | 20 | advapi32 table (registry, `GetUserNameA`) |
-| `src/peb.cpp` | 46 | TEB→PEB access, module-list walk |
-| `src/system.cpp` | 170 | PE export resolve by hash and by name |
+| `entry.cc` | 34 | `entry()` — PEB env read → `agent_main` → `ExitProcess`. Link-order head |
+| `src/main.cc` | 396 | dial/serve/redial loop; v3 command handlers |
+| `src/transport.cc` | 51 | `ws_send` / `ws_receive` (fragment assembly) |
+| `src/shell.cc` | 143 | the cmd.exe pool |
+| `src/commands.cc` | 150 | shell handlers |
+| `src/system_facts.cc` | 57 | hostname / username / OS version |
+| `src/environment.cc` | 73 | `GetVariable` — walk the PEB environment block |
+| `src/winhttp_api.cc` | 88 | LdrLoadDll(winhttp.dll) + table resolve |
+| `src/ntdll.cc` | 17 | ntdll table (`LdrLoadDll`, `RtlGetVersion`) |
+| `src/kernel32.cc` | 63 | kernel32 table (15 exports) |
+| `src/advapi.cc` | 20 | advapi32 table (registry, `GetUserNameA`) |
+| `src/peb.cc` | 46 | TEB→PEB access, module-list walk |
+| `src/system.cc` | 170 | PE export resolve by hash and by name |
 | `include/djb2.h` | - | inline constexpr hash functions shared by both resolve paths |
-| `src/string.cpp` | 32 | strlen / wcslen / AnsiToWide (no formatting) |
-| `src/memory.cpp` | 26 | MemoryZero / MemoryCopy / freestanding memset |
-| `src/logger.cpp` | 38 | printf `LOG_INFO`/`LOG_ERROR` macros → WriteFile(stdout) |
+| `src/string.cc` | 32 | strlen / wcslen / AnsiToWide (no formatting) |
+| `src/memory.cc` | 26 | MemoryZero / MemoryCopy / freestanding memset |
+| `src/logger.cc` | 38 | printf `LOG_INFO`/`LOG_ERROR` macros → WriteFile(stdout) |
 | `include/stackstrings.h` | 964 | the string dictionary (XOR builders) |
 | `include/protocol.h` | 46 | opcodes, statuses, limits, exit codes |
 | `include/types.h` | 145 | the whole type dictionary (no SDK headers) |

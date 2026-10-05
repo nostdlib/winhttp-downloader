@@ -5,7 +5,7 @@ And the function that replaces it is not allowed to share a file with
 anything else. Both rules are load-bearing — this chapter explains why.
 
 **Primary source files:**
-- `entry.cpp` — 35 lines, the entire file
+- `entry.cc` — 35 lines, the entire file
 - `include/entry.h` — the `agent_main` contract
 
 ---
@@ -25,7 +25,7 @@ waiting for its return.
 
 ## 2. What entry() Does
 
-```cpp
+```cc
 __attribute__((section(".text"), used))
 void entry(void)
 {

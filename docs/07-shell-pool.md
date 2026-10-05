@@ -2,10 +2,10 @@
 
 Every command the panel sends bottoms out here: a pool of `cmd.exe`
 processes, each hidden, each behind a pair of pipes, each slot
-addressed by its index. This chapter is `shell.cpp` — 143 lines that own
+addressed by its index. This chapter is `shell.cc` — 143 lines that own
 the agent's only capability.
 
-**Primary source file:** `src/shell.cpp` + `include/shell.h`
+**Primary source file:** `src/shell.cc` + `include/shell.h`
 
 ---
 
