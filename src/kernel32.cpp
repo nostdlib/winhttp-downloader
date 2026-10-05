@@ -1,7 +1,6 @@
 #include "kernel32.h"
 #include "system.h"
 #include "wintypes.h"
-#include "apihash.h"
 
 BOOL KERNEL32_Ctor(KERNEL32 *kernel)
 {

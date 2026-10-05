@@ -1,6 +1,5 @@
 #include "advapi.h"
 #include "system.h"
-#include "apihash.h"
 #include "djb2.h"
 
 BOOL ADVAPI_Ctor(PADVAPI advapi)

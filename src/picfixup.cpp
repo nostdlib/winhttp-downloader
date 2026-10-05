@@ -5,7 +5,6 @@
 
 #include "system.h"
 #include "wintypes.h"
-#include "apihash.h"
 
 #define PIC_PAGE_EXECUTE_READWRITE 0x40
 #define PIC_PAGE_EXECUTE_READ      0x20
