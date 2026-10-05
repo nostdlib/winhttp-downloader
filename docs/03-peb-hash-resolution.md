@@ -7,12 +7,11 @@ This agent has **an empty import table** — `objdump -p` shows no
 runtime. This chapter is the machinery that does it.
 
 **Primary source files:**
-- `src/peb.c` + `include/peb.h` — TEB/PEB access, the module walk
-- `src/system.c` + `include/system.h` — PE export-table resolve
-- `src/djb2.c` + `include/djb2.h` — the hash
-- `include/apihash.h` — every precomputed hash constant
-- `src/environment.c` — reading env vars through the PEB
-- `src/kernel32.c`, `src/ntdll.c`, `src/advapi.c` — the per-DLL tables
+- `src/peb.cc` + `include/peb.h` — TEB/PEB access, the module walk
+- `src/system.cc` + `include/system.h` — PE export-table resolve
+- `include/djb2.h` — the hash
+- `src/environment.cc` — reading env vars through the PEB
+- `src/kernel32.cc`, `src/ntdll.cc`, `src/advapi.cc` — the per-DLL tables
 
 ---
 
@@ -36,7 +35,7 @@ same djb2-variant hash of the *lowercased* name.
 
 ## 2. Getting the PEB: One Instruction Per Architecture
 
-`GetCurrentPEB()` in `src/peb.c` — the whole trick is that Windows parks
+`GetCurrentPEB()` in `src/peb.cc` — the whole trick is that Windows parks
 a self-pointer to the TEB (Thread Environment Block) in a segment
 register, and the PEB is the second field of the TEB:
 
@@ -89,7 +88,7 @@ here because there is no `ntdef.h`.
 
 ## 4. Parsing the Export Table
 
-`ResolveExportByHash(moduleBase, exportHash)` in `src/system.c` reads
+`ResolveExportByHash(moduleBase, exportHash)` in `src/system.cc` reads
 the module's PE image directly — the same walk `GetProcAddress` does
 internally:
 
@@ -116,11 +115,12 @@ constants.
 
 ## 5. The Hash and Why It Is Exactly This One
 
-`src/djb2.c` — djb2 (Daniel Bernstein's string hash) with two tweaks:
+`include/djb2.h` — inline constexpr djb2 (Daniel Bernstein's string hash)
+with two tweaks:
 
 ```c
 UINT64 Hash(const WCHAR *str) {
-    UINT64 h = API_HASH_SEED;          // 5381
+    UINT64 h = seed;          // 5381
     for (...) {
         c = lowercase(str[i]);
         h = ((h << 5) + h) + c;        // h*33 + c
@@ -133,9 +133,6 @@ UINT64 Hash(const WCHAR *str) {
 - **64-bit** — a 32-bit djb2 collides uncomfortably often across a
   DLL's full export list; 64-bit makes a collision astronomically
   unlikely for the handful of names we resolve.
-
-`include/apihash.h` holds every constant this needs, **precomputed at
-table-build time**:
 
 ```c
 #define HASH_MOD_KERNEL32   0xD537E9367040EE75ULL
@@ -153,7 +150,7 @@ name with this exact function.
 ## 6. The Per-DLL Tables
 
 Each DLL the agent needs has one struct of function pointers and one
-`Ctor` that fills it — `kernel32.c`, `ntdll.c`, `advapi.c`:
+`Ctor` that fills it — `kernel32.cc`, `ntdll.cc`, `advapi.cc`:
 
 ```c
 BOOL KERNEL32_Ctor(KERNEL32 *kernel)
@@ -183,7 +180,7 @@ Three properties worth noting:
   ntdll). advapi32 is not guaranteed — `ADVAPI_Ctor` returning FALSE is
   a handled case (identity then omits username, not crashes).
 
-`src/winhttp_api.c` adds one wrinkle for **winhttp.dll**, which is NOT
+`src/winhttp_api.cc` adds one wrinkle for **winhttp.dll**, which is NOT
 loaded by default: `WINHTTP_API_Ctor` first tries the PEB walk, and on
 a miss resolves `ntdll!LdrLoadDll` and loads winhttp.dll by its
 (stack-built, see [04](04-stack-strings.md)) wide name. The module then
@@ -194,7 +191,7 @@ limitation, documented as such in the README.
 
 ## 7. Reading Environment Variables (the PEB's Second Job)
 
-`src/environment.c` implements `GetVariable("W_URL", buffer, size)` — the
+`src/environment.cc` implements `GetVariable("W_URL", buffer, size)` — the
 CRT `getenv` replacement, and the only way the agent learns its relay
 address.
 

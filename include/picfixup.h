@@ -3,7 +3,7 @@
 #include "types.h"
 
 #if defined(ENVIRONMENT_I386) && defined(LOGGING_ENABLED)
-    VOID PIC_ApplyFixups(VOID);
+    VOID PIC_ApplyFixups(UINT32 linkReturnAddress);
 #else
     #define PIC_ApplyFixups() ((void)0)
 #endif

@@ -6,7 +6,7 @@ chapter is the wire language, the four implemented commands, and the
 loop that never gives up.
 
 **Primary source files:**
-- `src/main.c` — `agent_main`, `run_session`, the four handlers
+- `src/main.cc` — `agent_main`, `run_session`, the four handlers
 - `include/protocol.h` — opcodes, statuses, limits, exit codes
 - `include/wire.h` — the little-endian writers
 

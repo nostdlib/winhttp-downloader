@@ -84,24 +84,24 @@ jobs:
           DEFS="-DLOGGING_ENABLED"
           EXE=minimal_agent.exe
           BIN=minimal_agent.bin
-          echo "=== building windows-${{ matrix.arch }}-${{ matrix.flavor }} (${{ matrix.triple }}-gcc) ==="
-          # entry.c MUST stay FIRST on the command line and carries only
-          # entry() (the stack probes live in src/stack_probes.c). Merge
+          echo "=== building windows-${{ matrix.arch }}-${{ matrix.flavor }} (${{ matrix.triple }}-g++) ==="
+          # entry.cc MUST stay FIRST on the command line and carries only
+          # entry(). Merge
           # read-only log/string data into .text so the extracted blob
           # contains every RIP-relative target it uses. llvm-mingw uses lld,
           # whose PE linker accepts /merge rather than GNU ld's -T.
             rm -rf obj
             mkdir -p obj
-            ${{ matrix.triple }}-gcc -O2 -Iinclude $DEFS \
-              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+            ${{ matrix.triple }}-g++ -O2 -Iinclude $DEFS \
+              -fno-builtin -fno-asynchronous-unwind-tables -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -DID_BUILD_NUMBER="$BUILD_NUMBER" \
               -DAGENT_COMMIT_HASH="\"$COMMIT_HASH\"" \
               -c \
-              entry.c src/stack_probes.c src/picfixup.c src/main.c \
-              src/transport.c src/shell.c src/system_facts.c \
-              src/environment.c src/winhttp_api.c src/ntdll.c src/kernel32.c \
-              src/advapi.c src/string.c   src/memory.c src/peb.c \
-              src/system.c src/djb2.c src/logger.c src/commands.c
+              entry.cc src/picfixup.cc src/main.cc \
+              src/transport.cc src/shell.cc src/system_facts.cc \
+              src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc \
+              src/advapi.cc src/string.cc src/memory.cc src/peb.cc \
+              src/system.cc src/logger.cc src/commands.cc
             mv ./*.o obj/
             objects=(obj/entry.o)
             for object in obj/*.o; do
@@ -114,10 +114,11 @@ jobs:
               objects+=("obj/picdata.o")
               PICDATA="-Wl,/merge:.picdata=.text"
             fi
-            ${{ matrix.triple }}-gcc -O2 -s -nostdlib -Iinclude $DEFS \
-              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+            ${{ matrix.triple }}-g++ -O2 -s -nostdlib -Iinclude $DEFS \
+              -fno-asynchronous-unwind-tables -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -e entry \
-              -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text $PICDATA \
+              -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text \
+              -Wl,/merge:.pdata=.text -Wl,/merge:.xdata=.text $PICDATA \
               -o "$EXE" "${objects[@]}"
           ${{ matrix.triple }}-objcopy --dump-section .text="$BIN" "$EXE"
 

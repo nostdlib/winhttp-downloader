@@ -1,12 +1,11 @@
 # Entry and Stack Probes: Where the Agent Begins
 
-Every C program you have written starts at `main()`. This one does not.
+Every C++ program you have written starts at `main()`. This one does not.
 And the function that replaces it is not allowed to share a file with
 anything else. Both rules are load-bearing — this chapter explains why.
 
 **Primary source files:**
-- `entry.c` — 35 lines, the entire file
-- `src/stack_probes.c` — 95 lines of asm, deliberately NOT in entry.c
+- `entry.cc` — 35 lines, the entire file
 - `include/entry.h` — the `agent_main` contract
 
 ---
@@ -26,7 +25,7 @@ waiting for its return.
 
 ## 2. What entry() Does
 
-```c
+```cc
 __attribute__((section(".text"), used))
 void entry(void)
 {
@@ -107,33 +106,7 @@ jumps to offset 0. The failure is silent: the blob just exits.
 
 ---
 
-## 4. Why the Stack Probes Live in a Different File
-
-`src/stack_probes.c` contains hand-written asm implementations of the
-compiler's stack-probe helpers:
-
-| Arch | Symbol the compiler calls | Contract |
-|---|---|---|
-| x86_64 | `__chkstk` / `___chkstk_ms` | RAX = bytes needed; walk pages DOWN from `[rsp+0x18]`, `orq 0,(rcx)` to commit each guard page; RSP untouched |
-| i386 | `__alloca`, `__chkstk`, `_chkstk`, `___alloca` | EAX = bytes; page walk probes below the frame, then **rewrites ESP** — the probe itself allocates: it moves the return address down to the new stack top, sets ESP to the frame base, and returns into the caller. The caller addresses locals at positive ESP offsets and frees with `add esp, N` |
-| i386 | `___chkstk_ms` / `__chkstk_ms` | EAX = bytes; SP-untouched walk (a different contract — callers adjust) |
-| aarch64 | `__chkstk` | X15 = bytes; probe down with `str xzr` |
-
-Any function whose frame exceeds one page (ours go up to 142 KB on
-i386 — `run_session` carries a 64 KB message buffer on its frame) calls
-one of these before touching locals, so the OS can grow the stack
-legally instead of the allocation skipping the guard page and
-faulting.
-
-Why not in `entry.c`? Because **top-level `asm()` always occupies the
-start of the object's `.text`** — regardless of where in the file it is
-written. An `entry.c` carrying both the probes and `entry()` emits the
-probe code first; byte 0 becomes `__chkstk`, not `entry()`. The probes
-were split out precisely so `entry.c` contains nothing but `entry()`.
-
----
-
-## 5. Compile-Time Arch Detection
+## 4. Compile-Time Arch Detection
 
 `include/types.h` normalizes the mess of compiler macros into
 `ENVIRONMENT_x86_64` / `ENVIRONMENT_I386` / `ENVIRONMENT_ARM64` /

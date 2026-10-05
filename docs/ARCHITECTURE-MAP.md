@@ -46,9 +46,8 @@ entry at byte 0 — load RW→RX→jump)
 Arrows point downward; nothing includes upward.
 
 ```
-entry.c ──────────────┐
-src/stack_probes.c ───┤
-src/main.c ───────────┤→ system_facts ─────────────────────┐
+entry.cc ────────────┐
+src/main.cc ─────────┤→ system_facts ─────────────────────┐
                       │→ transport ─→ winhttp_api ─────────┤
                       │→ shell ────────────────────────────┤→ kernel32 ─┐
                       |                                    |→ advapi  ──┤→ system ─┐
@@ -69,15 +68,15 @@ are no globals.
 ```
 panel sends: [0x02][corrId][shellId:8]["whoami\n\0"]
    │
-   ├─ transport.c   ws_receive: fragments → one message
-   ├─ main.c        dispatch: opcode, corr_id; handler = write_shell
-   ├─ shell.c       shell_lookup(id) → slot; WriteFile → cmd.exe stdin
+   ├─ transport.cc ws_receive: fragments → one message
+   ├─ main.cc      dispatch: opcode, corr_id; handler = write_shell
+   ├─ shell.cc     shell_lookup(id) → slot; WriteFile → cmd.exe stdin
    ├─ cmd.exe       executes (hidden, UTF-8 codepage)
    ▼ (panel polls)
 panel sends: [0x03][corrId][shellId:8]
-   ├─ shell.c       PeekNamedPipe → ReadFile → bytes
-   └─ main.c        reply [0][corrId][chunk][NUL]
-   └─ transport.c   ws_send: one binary frame
+   ├─ shell.cc     PeekNamedPipe → ReadFile → bytes
+   └─ main.cc      reply [0][corrId][chunk][NUL]
+   └─ transport.cc ws_send: one binary frame
 ```
 
 ---
@@ -85,38 +84,35 @@ panel sends: [0x03][corrId][shellId:8]
 ## File Responsibilities (the whole tree)
 
 ```
-entry.c                    entry(): PEB env → agent_main → ExitProcess.
+entry.cc                  entry(): PEB env → agent_main → ExitProcess.
                            MUST be the first link object (blob byte 0).
 src/
-  stack_probes.c           __chkstk/__alloca asm, 3 arches. Own file so
-                           top-level asm can't precede entry() in .text.
-  main.c                   agent_main (redial loop, backoff), run_session
+   main.cc                 agent_main (redial loop, backoff), run_session
                            (connect/serve), v3 corrId handlers, dispatch.
-  transport.c              ws_send / ws_receive (fragment assembly, truncation
+   transport.cc            ws_send / ws_receive (fragment assembly, truncation
                            refusal, close-frame = normal loss).
-  shell.c                  256-slot cmd.exe pool: spawn/pipes/no-window,
+   shell.cc                256-slot cmd.exe pool: spawn/pipes/no-window,
                            non-blocking PeekNamedPipe reads, teardown.
-  commands.c               shell command handlers
-  system_facts.c           hostname / username / RtlGetVersion (no manifest lie).
-  environment.c            GetVariable: PEB env block walk, case-insensitive.
-  winhttp_api.c            LdrLoadDll(winhttp) bootstrap + 12-call table.
-  ntdll.c                  ntdll table: LdrLoadDll, RtlGetVersion.
-  kernel32.c               kernel32 table: 15 exports, all-or-nothing Ctor.
-  advapi.c                 advapi32 table: registry + GetUserNameA.
-  peb.c                    GetCurrentPEB (1 asm instr/arch), module-list walk.
-  system.c                 PE export resolve by hash / by name; fwd-refusal.
-  djb2.c                   lowercase djb2, 64-bit, seed 5381.
-  string.c                 strlen/wcslen/AnsiToWide (wide conversion and
+   commands.cc             shell command handlers
+   system_facts.cc         hostname / username / RtlGetVersion (no manifest lie).
+   environment.cc          GetVariable: PEB env block walk, case-insensitive.
+   winhttp_api.cc          LdrLoadDll(winhttp) bootstrap + 12-call table.
+   ntdll.cc                ntdll table: LdrLoadDll, RtlGetVersion.
+   kernel32.cc             kernel32 table: 15 exports, all-or-nothing Ctor.
+   advapi.cc               advapi32 table: registry + GetUserNameA.
+   peb.cc                  GetCurrentPEB (1 asm instr/arch), module-list walk.
+   system.cc               PE export resolve by hash / by name; fwd-refusal.
+   djb2.cc                 lowercase djb2, 64-bit, seed 5381.
+   string.cc               strlen/wcslen/AnsiToWide (wide conversion and
                            lengths; no formatting).
-  memory.c                 MemoryZero/MemoryCopy + freestanding memset.
-  logger.c                 LOG_INFO/LOG_ERROR printf macros → Format →
+   memory.cc               MemoryZero/MemoryCopy + freestanding memset.
+   logger.cc               LOG_INFO/LOG_ERROR printf macros → Format →
                            WriteFile(stdout); compiles to nothing in release.
 include/
   types.h                  the whole type dictionary + arch normalization.
   wintypes.h               Windows-ish structs (UNICODE_STRING, OSVERSIONINFOW,
                            SECURITY_ATTRIBUTES, STARTUPINFOW …).
   protocol.h               opcodes, statuses, sizes, exit codes.
-  apihash.h                every precomputed module/export hash.
   stackstrings.h           the string dictionary: XOR builders, volatile
                            stores (the .rdata fight lives here).
   peb.h / system.h / …     one header per module, minimal surface.

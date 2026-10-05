@@ -1,20 +1,21 @@
 #include "advapi.h"
 #include "system.h"
-#include "apihash.h"
+#include "djb2.h"
 
 BOOL ADVAPI_Ctor(PADVAPI advapi)
 {
     if (advapi == NULL)
         return FALSE;
+    PVOID module = GetModuleHandleFromPEB(HashAscii("advapi32.dll"));
 
     advapi->RegOpenKeyExA = (LSTATUS (WINAPI *)(HKEY, const PCHAR, DWORD, REGSAM, HKEY*))
-        ResolveFromModuleByHash(HASH_MOD_ADVAPI32, HASH_REGOPENKEYEXA);
+        ResolveExportByHash(module, HashAscii("RegOpenKeyExA"));
     advapi->RegQueryValueExA = (LSTATUS (WINAPI *)(HKEY, const PCHAR, DWORD*, DWORD*, unsigned char*, DWORD*))
-        ResolveFromModuleByHash(HASH_MOD_ADVAPI32, HASH_REGQUERYVALUEEXA);
+        ResolveExportByHash(module, HashAscii("RegQueryValueExA"));
     advapi->RegCloseKey = (LSTATUS (WINAPI *)(HKEY))
-        ResolveFromModuleByHash(HASH_MOD_ADVAPI32, HASH_REGCLOSEKEY);
+        ResolveExportByHash(module, HashAscii("RegCloseKey"));
     advapi->GetUserNameA = (BOOL (WINAPI *)(PCHAR, DWORD *))
-        ResolveFromModuleByHash(HASH_MOD_ADVAPI32, HASH_GETUSERNAMEA);
+        ResolveExportByHash(module, HashAscii("GetUserNameA"));
 
     return (advapi->RegOpenKeyExA != NULL && advapi->RegQueryValueExA != NULL && advapi->RegCloseKey != NULL && advapi->GetUserNameA != NULL);
 }

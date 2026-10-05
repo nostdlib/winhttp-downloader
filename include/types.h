@@ -21,7 +21,7 @@ typedef unsigned short WCHAR, *PWCHAR;
 #define ERROR_SUCCESS 0
 
 #ifndef NULL
-#define NULL ((void *)0)
+#define NULL 0
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)

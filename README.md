@@ -61,7 +61,7 @@ object and add the i386 relocation metadata; the VS Code tasks use the
 same direct linker flags in one command.
 Two rules make or break the result — both are enforced by CI gates:
 
-1. **`entry.o` must be the FIRST object on the link line.** `entry.c`
+1. **`entry.o` must be the FIRST object on the link line.** `entry.cc`
    holds nothing but `entry()`, so the linker places it at byte 0 of
    `.text`. If a glob like `obj\*.o` sorts another object first, the
    exe still runs but the raw `.bin`
@@ -77,8 +77,8 @@ Two rules make or break the result — both are enforced by CI gates:
 Remove-Item -Recurse -Force obj -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force obj | Out-Null
 
-# 2) Compile. Sources: entry.c in the root, the rest in src\, headers in include\.
-gcc -O2 -DLOGGING_ENABLED -Iinclude -fno-asynchronous-unwind-tables -fno-shrink-wrap -fno-ident -fno-jump-tables -fno-tree-vectorize -fno-tree-slp-vectorize -c entry.c src/stack_probes.c src/picfixup.c src/main.c src/transport.c src/shell.c src/system_facts.c src/environment.c src/winhttp_api.c src/ntdll.c src/kernel32.c src/advapi.c src/string.c src/memory.c src/peb.c src/system.c src/djb2.c src/logger.c src/commands.c
+# 2) Compile. Sources: entry.cc in the root, the rest in src\, headers in include\.
+gcc -O2 -DLOGGING_ENABLED -Iinclude -fno-builtin -fno-asynchronous-unwind-tables -fno-shrink-wrap -fno-ident -fno-jump-tables -fno-tree-vectorize -fno-tree-slp-vectorize -c entry.cc src/picfixup.cc src/main.cc src/transport.cc src/shell.cc src/system_facts.cc src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc src/advapi.cc src/string.cc src/memory.cc src/peb.cc src/system.cc src/logger.cc src/commands.cc
 
 # 3) Park the objects.
 Move-Item *.o obj
@@ -162,8 +162,7 @@ browser works with zero file opcodes implemented.
 
 | File | What it owns |
 |---|---|
-| `entry.c` | `entry()` and nothing else: build the URL from the PEB environment, call agent_main, exit via ExitProcess. MUST stay the first object on the link line |
-| `src/stack_probes.c` | the `__chkstk`/`__alloca` stack probes for x86_64 / i386 / aarch64 (kept out of entry.c so entry stays byte 0) |
+| `entry.cc` | `entry()` and nothing else: build the URL from the PEB environment, call agent_main, exit via ExitProcess. MUST stay the first object on the link line |
 | `main.c` | `agent_main`: owns process-lifetime state on its frame (shell pool, backoff), runs dial/serve/redial; command handlers with the v3 corrId framing |
 | `protocol.h` | opcodes, statuses, API-1 constants, capability mask, buffer limits |
 | `commands.h/.c` | shell handlers, identity headers |
@@ -176,10 +175,9 @@ browser works with zero file opcodes implemented.
 | `winhttp_api.h/.c` | the WinHTTP table + the LdrLoadDll bootstrap that maps winhttp.dll |
 | `kernel32/ntdll/advapi.h/.c` | one function table per DLL, hash-resolved |
 | `peb.h/.c` | TEB/PEB access, the module-list walk, environment reader |
-| `system.h/.c` | export-table resolve — by name (tooling) and by hash (the agent) |
-| `apihash.h` | the precomputed djb2 constants for every name used |
+| `system.h/.c` | export-table resolve — by name (tooling) and by hash (the agent) ||
 | `stackstrings.h` | every runtime string, built on the stack, XOR-decoded in the write |
-| `djb2.h/.c` | the hash both resolve paths share |
+| `djb2.h/.cc` | the hash both resolve paths share |
 | `string.c` / `memory.c` | the hand-rolled CRT replacements |
 
 Reading order for a newcomer: `entry.c` (how a process starts without
