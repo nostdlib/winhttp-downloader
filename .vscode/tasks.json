@@ -44,7 +44,6 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
-        "src/djb2.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -82,7 +81,6 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
-        "src/djb2.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -120,7 +118,6 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
-        "src/djb2.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -160,7 +157,6 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
-        "src/djb2.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -199,7 +195,6 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
-        "src/djb2.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],

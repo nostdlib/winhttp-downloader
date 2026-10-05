@@ -9,7 +9,7 @@ runtime. This chapter is the machinery that does it.
 **Primary source files:**
 - `src/peb.cc` + `include/peb.h` — TEB/PEB access, the module walk
 - `src/system.cc` + `include/system.h` — PE export-table resolve
-- `src/djb2.cc` + `include/djb2.h` — the hash
+- `include/djb2.h` — the hash
 - `src/environment.cc` — reading env vars through the PEB
 - `src/kernel32.cc`, `src/ntdll.cc`, `src/advapi.cc` — the per-DLL tables
 

@@ -78,7 +78,7 @@ Remove-Item -Recurse -Force obj -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force obj | Out-Null
 
 # 2) Compile. Sources: entry.cc in the root, the rest in src\, headers in include\.
-gcc -O2 -DLOGGING_ENABLED -Iinclude -fno-builtin -fno-asynchronous-unwind-tables -fno-shrink-wrap -fno-ident -fno-jump-tables -fno-tree-vectorize -fno-tree-slp-vectorize -c entry.cc src/picfixup.cc src/main.cc src/transport.cc src/shell.cc src/system_facts.cc src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc src/advapi.cc src/string.cc src/memory.cc src/peb.cc src/system.cc src/djb2.cc src/logger.cc src/commands.cc
+gcc -O2 -DLOGGING_ENABLED -Iinclude -fno-builtin -fno-asynchronous-unwind-tables -fno-shrink-wrap -fno-ident -fno-jump-tables -fno-tree-vectorize -fno-tree-slp-vectorize -c entry.cc src/picfixup.cc src/main.cc src/transport.cc src/shell.cc src/system_facts.cc src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc src/advapi.cc src/string.cc src/memory.cc src/peb.cc src/system.cc src/logger.cc src/commands.cc
 
 # 3) Park the objects.
 Move-Item *.o obj
