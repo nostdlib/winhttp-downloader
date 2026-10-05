@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-consteval UINT64 SeedGenerator(const CHAR* str){
+constexpr UINT64 SeedGenerator(const CHAR* str){
     UINT64 h = (UINT64)2166136261u;
     for (UINT64 i = 0; str[i] != '\0'; ++i)
 		h = (h ^ (UINT64)(UINT8)str[i]) * (UINT64)16777619u;
