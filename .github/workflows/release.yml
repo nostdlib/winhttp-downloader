@@ -78,7 +78,7 @@ jobs:
             rm -rf obj
             mkdir -p obj
             ${{ matrix.triple }}-g++ -O2 -Iinclude $DEFS -Wall -Wextra \
-              -fno-builtin -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+              -fno-builtin -fno-asynchronous-unwind-tables -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -DID_BUILD_NUMBER="$BUILD_NUMBER" \
               -DAGENT_COMMIT_HASH="\"$COMMIT_HASH\"" \
               -c \
@@ -100,9 +100,10 @@ jobs:
               PICDATA="-Wl,/merge:.picdata=.text"
             fi
             ${{ matrix.triple }}-g++ -O2 -s -nostdlib -Iinclude $DEFS -Wall -Wextra \
-              -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
+              -fno-asynchronous-unwind-tables -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -e entry \
-              -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text $PICDATA \
+              -Wl,/merge:.rdata=.text -Wl,/merge:.rodata=.text \
+              -Wl,/merge:.pdata=.text -Wl,/merge:.xdata=.text $PICDATA \
               -o "$EXE" "${objects[@]}"
           ${{ matrix.triple }}-objcopy --dump-section .text="$BIN" "$EXE"
 
