@@ -1,11 +1,18 @@
 #pragma once
 #include "types.h"
 
-constexpr UINT64 API_HASH_SEED = 5381ULL;
+consteval UINT64 SeedGenerator(const CHAR* str){
+    UINT64 h = (UINT64)2166136261u;
+    for (UINT64 i = 0; str[i] != '\0'; ++i)
+		h = (h ^ (UINT64)(UINT8)str[i]) * (UINT64)16777619u;
+	return h;
+}
+
+static constexpr UINT64 seed = SeedGenerator(__DATE__);
 
 constexpr UINT64 Hash(const WCHAR* str)
 {
-	UINT64 hash = API_HASH_SEED;
+	UINT64 hash = seed;
 
 	for (UINT64 index = 0; str[index] != L'\0'; ++index) {
 		WCHAR character = str[index];
@@ -20,7 +27,7 @@ constexpr UINT64 Hash(const WCHAR* str)
 
 constexpr UINT64 HashAscii(const CHAR* str)
 {
-	UINT64 hash = API_HASH_SEED;
+	UINT64 hash = seed;
 
 	for (UINT64 index = 0; str[index] != '\0'; ++index) {
 		CHAR character = str[index];

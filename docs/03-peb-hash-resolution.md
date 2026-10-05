@@ -120,7 +120,7 @@ with two tweaks:
 
 ```c
 UINT64 Hash(const WCHAR *str) {
-    UINT64 h = API_HASH_SEED;          // 5381
+    UINT64 h = seed;          // 5381
     for (...) {
         c = lowercase(str[i]);
         h = ((h << 5) + h) + c;        // h*33 + c
