@@ -261,7 +261,7 @@ static void formatHex(UINT32 num, INT32 fieldWidth, INT32 uppercase, PCHAR s, PI
 
 #define TO_LOWER_CASE(c) ((c) >= 'A' && (c) <= 'Z' ? (c) + ('a' - 'A') : (c))
 
-INT32 FormatV(PCHAR s, SIZE_T size, const PCHAR format, va_list args) {
+INT32 FormatV(PCHAR s, SIZE_T size, const CHAR* format, va_list args) {
 
     INT32 i = 0, j = 0;
     INT32 precision = 6;
@@ -473,7 +473,7 @@ INT32 FormatV(PCHAR s, SIZE_T size, const PCHAR format, va_list args) {
     return j;
 }
 
-INT32 Format(PCHAR s, SIZE_T size, const PCHAR format, ...) {
+INT32 Format(PCHAR s, SIZE_T size, const CHAR* format, ...) {
     va_list args;
     va_start(args, format);
     INT32 len = FormatV(s, size, format, args);

@@ -6,8 +6,7 @@
 #include "stackstrings.h"
 #include "picfixup.h"
 
-__attribute__((section(".text"), used))
-void entry(void)
+extern "C" __attribute__((section(".text"), used)) void entry(void)
 {
 #if defined(ENVIRONMENT_I386) && defined(LOGGING_ENABLED)
     PIC_ApplyFixups((UINT32)(ULONG_PTR)&&pic_fixups_return);
