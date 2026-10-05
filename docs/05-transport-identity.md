@@ -6,9 +6,9 @@ very first HTTP request it makes doubles as its introduction to the C2
 panel. This chapter covers both.
 
 **Primary source files:**
-- `src/winhttp_api.c` + `include/winhttp_api.h` — the runtime table
-- `src/transport.c` + `include/transport.h` — send / receive framing
-- `src/main.c` `run_session()` — the connect sequence
+- `src/winhttp_api.cpp` + `include/winhttp_api.h` — the runtime table
+- `src/transport.cpp` + `include/transport.h` — send / receive framing
+- `src/main.cpp` `run_session()` — the connect sequence
 
 ---
 
@@ -100,7 +100,7 @@ buffers, never from the binary.
 
 ---
 
-## 4. The WebSocket Pipe (transport.c)
+## 4. The WebSocket Pipe (transport.cpp)
 
 A function, deliberately narrow:
 
@@ -128,7 +128,7 @@ typedef struct {
 
 ## 6.Logging
 
-`logger.c` provides the `LOG_INFO` and `LOG_ERROR` output.
+`logger.cpp` provides the `LOG_INFO` and `LOG_ERROR` output.
 Release builds compile these macros away. Diagnostic output is written
 through the resolved kernel32 output API and is absent from release
 behavior.

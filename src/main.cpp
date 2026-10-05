@@ -56,6 +56,9 @@ INT32 agent_main(const WCHAR *url)
 static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
 {
     int rc = RC_SESSION_LOST;
+    BOOL https = FALSE;
+    DWORD request_flags = WINHTTP_FLAG_REFRESH;
+    USIZE headers_len = 0;
 
     HINTERNET session = NULL, connection = NULL, request = NULL, socket = NULL;
 
@@ -105,7 +108,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
         rc = RC_LOCAL_ERROR;
         goto cleanup;
     }
-    BOOL https = (uc.nScheme == INTERNET_SCHEME_HTTPS);
+    https = (uc.nScheme == INTERNET_SCHEME_HTTPS);
 
     LOG_INFO("Connecting to relay %ls...", host);
 
@@ -117,7 +120,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     connection = winhttp.WinHttpConnect(session, uc.lpszHostName, uc.nPort, 0);
     if (!connection) { LOG_ERROR("WinHttpConnect failed (GLE=%lu)", (unsigned long)kernel32.GetLastError()); goto cleanup; }
 
-    DWORD request_flags = WINHTTP_FLAG_REFRESH;
+    request_flags = WINHTTP_FLAG_REFRESH;
     if (https) request_flags |= WINHTTP_FLAG_SECURE;
 
     WCHAR get_buf[4];
@@ -131,7 +134,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
     }
 
     CHAR headers_a[IDENTITY_HEADERS_SIZE];
-    USIZE headers_len = Handle_IdentityHeaders(headers_a);
+    headers_len = Handle_IdentityHeaders(headers_a);
     if (headers_len == 0) {
         LOG_ERROR("identity header block does not fit\n");
         rc = RC_LOCAL_ERROR;

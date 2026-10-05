@@ -21,7 +21,7 @@ VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
     ULONG_PTR base = PIC_LINK_TEXT_VMA + delta;
     UINT32 scratch = 0;
 
-    pVirtualProtect = (BOOL (WINAPI *)(PVOID, SIZE_T, UINT32, UINT32 *)) ResolveFromModuleByHash(HASH_MOD_KERNEL32, HASH_VIRTUALPROTECT);
+    pVirtualProtect = (BOOL (WINAPI *)(PVOID, SIZE_T, UINT32, UINT32 *)) ResolveFromModuleByHash(HashAscii("kernel32.dll"), HashAscii("VirtualProtect"));
     if (pVirtualProtect == NULL)
         return;
 

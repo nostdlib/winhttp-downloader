@@ -7,11 +7,11 @@ This agent has **an empty import table** — `objdump -p` shows no
 runtime. This chapter is the machinery that does it.
 
 **Primary source files:**
-- `src/peb.c` + `include/peb.h` — TEB/PEB access, the module walk
-- `src/system.c` + `include/system.h` — PE export-table resolve
-- `src/djb2.c` + `include/djb2.h` — the hash
-- `src/environment.c` — reading env vars through the PEB
-- `src/kernel32.c`, `src/ntdll.c`, `src/advapi.c` — the per-DLL tables
+- `src/peb.cpp` + `include/peb.h` — TEB/PEB access, the module walk
+- `src/system.cpp` + `include/system.h` — PE export-table resolve
+- `src/djb2.cpp` + `include/djb2.h` — the hash
+- `src/environment.cpp` — reading env vars through the PEB
+- `src/kernel32.cpp`, `src/ntdll.cpp`, `src/advapi.cpp` — the per-DLL tables
 
 ---
 
@@ -35,7 +35,7 @@ same djb2-variant hash of the *lowercased* name.
 
 ## 2. Getting the PEB: One Instruction Per Architecture
 
-`GetCurrentPEB()` in `src/peb.c` — the whole trick is that Windows parks
+`GetCurrentPEB()` in `src/peb.cpp` — the whole trick is that Windows parks
 a self-pointer to the TEB (Thread Environment Block) in a segment
 register, and the PEB is the second field of the TEB:
 
@@ -88,7 +88,7 @@ here because there is no `ntdef.h`.
 
 ## 4. Parsing the Export Table
 
-`ResolveExportByHash(moduleBase, exportHash)` in `src/system.c` reads
+`ResolveExportByHash(moduleBase, exportHash)` in `src/system.cpp` reads
 the module's PE image directly — the same walk `GetProcAddress` does
 internally:
 
@@ -115,7 +115,8 @@ constants.
 
 ## 5. The Hash and Why It Is Exactly This One
 
-`src/djb2.c` — djb2 (Daniel Bernstein's string hash) with two tweaks:
+`include/djb2.h` — inline constexpr djb2 (Daniel Bernstein's string hash)
+with two tweaks:
 
 ```c
 UINT64 Hash(const WCHAR *str) {
@@ -149,7 +150,7 @@ name with this exact function.
 ## 6. The Per-DLL Tables
 
 Each DLL the agent needs has one struct of function pointers and one
-`Ctor` that fills it — `kernel32.c`, `ntdll.c`, `advapi.c`:
+`Ctor` that fills it — `kernel32.cpp`, `ntdll.cpp`, `advapi.cpp`:
 
 ```c
 BOOL KERNEL32_Ctor(KERNEL32 *kernel)
@@ -179,7 +180,7 @@ Three properties worth noting:
   ntdll). advapi32 is not guaranteed — `ADVAPI_Ctor` returning FALSE is
   a handled case (identity then omits username, not crashes).
 
-`src/winhttp_api.c` adds one wrinkle for **winhttp.dll**, which is NOT
+`src/winhttp_api.cpp` adds one wrinkle for **winhttp.dll**, which is NOT
 loaded by default: `WINHTTP_API_Ctor` first tries the PEB walk, and on
 a miss resolves `ntdll!LdrLoadDll` and loads winhttp.dll by its
 (stack-built, see [04](04-stack-strings.md)) wide name. The module then
@@ -190,7 +191,7 @@ limitation, documented as such in the README.
 
 ## 7. Reading Environment Variables (the PEB's Second Job)
 
-`src/environment.c` implements `GetVariable("W_URL", buffer, size)` — the
+`src/environment.cpp` implements `GetVariable("W_URL", buffer, size)` — the
 CRT `getenv` replacement, and the only way the agent learns its relay
 address.
 

@@ -47,23 +47,23 @@ only what it includes, and the dependency graph flows one way — from the
 outer protocol (main) down to the hardware facts (peb).
 
 ```
-entry.c ─→ agent_main (main.c)
+entry.cpp ─→ agent_main (main.cpp)
               │
               ├─ run_session: WinHTTP connect + identity + serve loop
-              │     ├─ transport.c          WebSocket send/receive
-              │     ├─ shell.c              cmd.exe pool (OpenShell et al.)
-              │     └─ commands.c           shell command handlers
+              │     ├─ transport.cpp        WebSocket send/receive
+              │     ├─ shell.cpp            cmd.exe pool (OpenShell et al.)
+              │     └─ commands.cpp         shell command handlers
               │
               └─ supporting cast, resolved from left to right:
-                    system_facts.c → advapi/ntdll/kernel32 tables
-                    environment.c  → peb.c (env block)
-                    winhttp_api.c  → ntdll!LdrLoadDll bootstrap
-                    all tables     → system.c (PE export resolve)
-                    system.c       → peb.c (module list) + djb2.c
-                    strings/mem   → string.c / memory.c / stackstrings.h
+                    system_facts.cpp → advapi/ntdll/kernel32 tables
+                    environment.cpp  → peb.cpp (env block)
+                    winhttp_api.cpp  → ntdll!LdrLoadDll bootstrap
+                    all tables       → system.cpp (PE export resolve)
+                    system.cpp       → peb.cpp (module list) + djb2.cpp
+                    strings/mem      → string.cpp / memory.cpp / stackstrings.h
 ```
 
-Module count: **18 .c files + 21 headers, ~3.8k lines total** (a third of
+Module count: **18 .cpp files + 21 headers, ~3.8k lines total** (a third of
 that is `stackstrings.h` — machine-generated XOR string builders). One
 translation unit per topic; a header never pulls a module it doesn't need.
 
@@ -74,7 +74,7 @@ translation unit per topic; a header never pulls a module it doesn't need.
 Read the codebase in this order. Each step builds on the previous one.
 
 ### 1. Where a process starts without a runtime
-**Read:** `entry.c` (34 lines)
+**Read:** `entry.cpp` (34 lines)
 
 Why there is no `main()`, what `-nostdlib -e entry` really means, and why
 `entry.o` must be the **first object on the link line** — the single rule
@@ -82,7 +82,7 @@ that decides whether the `.bin` blob lives or dies.
 → [02 - Entry and Stack Probes](02-entry-and-probes.md)
 
 ### 2. Finding functions without imports
-**Read:** `src/peb.c`, `include/peb.h`, `src/system.c`
+**Read:** `src/peb.cpp`, `include/peb.h`, `src/system.cpp`
 
 How the agent walks its own PEB to find loaded DLLs, and parses PE export
 tables to resolve every OS call by a precomputed name hash. Zero import
@@ -100,7 +100,7 @@ on the traps.
 → [04 - Stack Strings](04-stack-strings.md)
 
 ### 4. The wire
-**Read:** `src/transport.c`, `src/winhttp_api.c`
+**Read:** `src/transport.cpp`, `src/winhttp_api.cpp`
 
 WinHTTP resolved at runtime (mapped via `LdrLoadDll`, never imported), the
 WebSocket upgrade carrying the agent's identity, and the v3 command framing
@@ -109,7 +109,7 @@ with correlation ids.
 [06 - Command Protocol](06-command-protocol.md)
 
 ### 5. The shell machine
-**Read:** `src/shell.c`
+**Read:** `src/shell.cpp`
 
 A pool of 256 hidden `cmd.exe` children behind pipe pairs, non-blocking
 drains, teardown on death. The only capability the agent advertises — and
@@ -121,7 +121,7 @@ serve file browsing too.
 **Read:** the [README](../README.md), then
 [08 - Build, Gates, and CI](08-build-and-ci.md)
 
-The flag set and what each one prevents, the four build gates, the two C
+The flag set and what each one prevents, the four build gates, the two C++
 coding rules that keep the blob alive, and how GitHub Actions turns this
 into three-architecture releases.
 → [08 - Build, Gates, and CI](08-build-and-ci.md)
@@ -151,23 +151,23 @@ understand them, every oddity in the code stops being odd:
 
 | File | Lines | What it owns |
 |---|---|---|
-| `entry.c` | 34 | `entry()` — PEB env read → `agent_main` → `ExitProcess`. Link-order head |
-| `src/main.c` | 396 | dial/serve/redial loop; v3 command handlers |
-| `src/transport.c` | 51 | `ws_send` / `ws_receive` (fragment assembly) |
-| `src/shell.c` | 143 | the cmd.exe pool |
-| `src/commands.c` | 150 | shell handlers |
-| `src/system_facts.c` | 57 | hostname / username / OS version |
-| `src/environment.c` | 73 | `GetVariable` — walk the PEB environment block |
-| `src/winhttp_api.c` | 88 | LdrLoadDll(winhttp.dll) + table resolve |
-| `src/ntdll.c` | 17 | ntdll table (`LdrLoadDll`, `RtlGetVersion`) |
-| `src/kernel32.c` | 63 | kernel32 table (15 exports) |
-| `src/advapi.c` | 20 | advapi32 table (registry, `GetUserNameA`) |
-| `src/peb.c` | 46 | TEB→PEB access, module-list walk |
-| `src/system.c` | 170 | PE export resolve by hash and by name |
-| `src/djb2.c` | 14 | the hash both resolve paths share |
-| `src/string.c` | 32 | strlen / wcslen / AnsiToWide (no formatting) |
-| `src/memory.c` | 26 | MemoryZero / MemoryCopy / freestanding memset |
-| `src/logger.c` | 38 | printf `LOG_INFO`/`LOG_ERROR` macros → WriteFile(stdout) |
+| `entry.cpp` | 34 | `entry()` — PEB env read → `agent_main` → `ExitProcess`. Link-order head |
+| `src/main.cpp` | 396 | dial/serve/redial loop; v3 command handlers |
+| `src/transport.cpp` | 51 | `ws_send` / `ws_receive` (fragment assembly) |
+| `src/shell.cpp` | 143 | the cmd.exe pool |
+| `src/commands.cpp` | 150 | shell handlers |
+| `src/system_facts.cpp` | 57 | hostname / username / OS version |
+| `src/environment.cpp` | 73 | `GetVariable` — walk the PEB environment block |
+| `src/winhttp_api.cpp` | 88 | LdrLoadDll(winhttp.dll) + table resolve |
+| `src/ntdll.cpp` | 17 | ntdll table (`LdrLoadDll`, `RtlGetVersion`) |
+| `src/kernel32.cpp` | 63 | kernel32 table (15 exports) |
+| `src/advapi.cpp` | 20 | advapi32 table (registry, `GetUserNameA`) |
+| `src/peb.cpp` | 46 | TEB→PEB access, module-list walk |
+| `src/system.cpp` | 170 | PE export resolve by hash and by name |
+| `include/djb2.h` | - | inline constexpr hash functions shared by both resolve paths |
+| `src/string.cpp` | 32 | strlen / wcslen / AnsiToWide (no formatting) |
+| `src/memory.cpp` | 26 | MemoryZero / MemoryCopy / freestanding memset |
+| `src/logger.cpp` | 38 | printf `LOG_INFO`/`LOG_ERROR` macros → WriteFile(stdout) |
 | `include/stackstrings.h` | 964 | the string dictionary (XOR builders) |
 | `include/protocol.h` | 46 | opcodes, statuses, limits, exit codes |
 | `include/types.h` | 145 | the whole type dictionary (no SDK headers) |

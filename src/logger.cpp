@@ -1,6 +1,6 @@
 #include "logger.h"
 #include "types.h"
-#include "apihash.h"
+#include "djb2.h"
 
 #ifdef LOGGING_ENABLED
 
@@ -14,8 +14,8 @@ void log_write(const char* buffer, unsigned long len)
     if (buffer == NULL || len == 0)
         return;
 
-    HANDLE (WINAPI *pGetStdHandle)(DWORD) = (HANDLE (WINAPI *)(DWORD))ResolveFromModuleByHash(HASH_MOD_KERNEL32, HASH_GETSTDHANDLE);
-    BOOL (WINAPI *pWriteFile)(HANDLE, const void *, DWORD, DWORD *, PVOID) = (BOOL(WINAPI *)(HANDLE, const void *, DWORD, DWORD *, PVOID))ResolveFromModuleByHash(HASH_MOD_KERNEL32, HASH_WRITEFILE);
+    HANDLE (WINAPI *pGetStdHandle)(DWORD) = (HANDLE (WINAPI *)(DWORD))ResolveFromModuleByHash(HashAscii("kernel32.dll"), HashAscii("GetStdHandle"));
+    BOOL (WINAPI *pWriteFile)(HANDLE, const void *, DWORD, DWORD *, PVOID) = (BOOL(WINAPI *)(HANDLE, const void *, DWORD, DWORD *, PVOID))ResolveFromModuleByHash(HashAscii("kernel32.dll"), HashAscii("WriteFile"));
 
     if (pGetStdHandle == NULL || pWriteFile == NULL)
         return;
