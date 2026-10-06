@@ -145,6 +145,7 @@
         "windows-i386-debug.exe",
         "entry.cc",
         "src/environment.cc",
+        "src/picfixup.cc",
         "src/main.cc",
         "src/transport.cc",
         "src/shell.cc",
