@@ -11,7 +11,7 @@
 #define PIC_RELOC_TYPE_HIGHLOW     3
 #define PIC_LINK_TEXT_VMA          0x401000u
 
-VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
+extern "C" VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
 {
     BOOL (WINAPI *pVirtualProtect)(PVOID, SIZE_T, UINT32, UINT32 *);
     ULONG_PTR base = PIC_LINK_TEXT_VMA + delta;
