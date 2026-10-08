@@ -1,7 +1,7 @@
 #include "picfixup.h"
 #include "djb2.h"
 
-#if defined(ENVIRONMENT_I386) && defined(PIC_RELOCATIONS_ENABLED)
+#if defined(ENVIRONMENT_I386) && defined(LOGGING_ENABLED)
 
 #include "system.h"
 #include "wintypes.h"
