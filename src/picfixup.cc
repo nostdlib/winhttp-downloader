@@ -1,7 +1,7 @@
 #include "picfixup.h"
 #include "djb2.h"
 
-#if defined(ENVIRONMENT_I386) && defined(PIC_RELOCATIONS_ENABLED)
+#if defined(ENVIRONMENT_I386) && defined(LOGGING_ENABLED)
 
 #include "system.h"
 #include "wintypes.h"
@@ -11,7 +11,10 @@
 #define PIC_RELOC_TYPE_HIGHLOW     3
 #define PIC_LINK_TEXT_VMA          0x401000u
 
-extern "C" VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
+extern UINT32 pic_reloc[];
+extern UINT32 pic_text_size;
+
+VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 textSize)
 {
     BOOL (WINAPI *pVirtualProtect)(PVOID, SIZE_T, UINT32, UINT32 *);
     ULONG_PTR base = PIC_LINK_TEXT_VMA + delta;
@@ -54,30 +57,14 @@ extern "C" VOID PIC_ApplyRelocations(UINT32 delta, const UINT32 *reloc, UINT32 t
                     PIC_PAGE_EXECUTE_READ, &scratch);
 }
 
-__asm__(
-    ".globl _PIC_ApplyFixups\n"
-    "_PIC_ApplyFixups:\n"
-    "    pushl %ebx\n"
-    "    pushl %esi\n"
-    "    pushl %edi\n"
-    "    call pic_mark\n"
-    "pic_mark:\n"
-    "    popl %ebx\n"
-    "    subl $(pic_mark), %ebx\n"
-    "    testl %ebx, %ebx\n"
-    "    jz pic_ret\n"
-    "    movl pic_reloc_size(%ebx), %esi\n"
-    "    movl pic_text_size(%ebx), %edi\n"
-    "    pushl %edi\n"
-    "    leal pic_reloc(%ebx), %eax\n"
-    "    pushl %eax\n"
-    "    pushl %ebx\n"
-    "    call _PIC_ApplyRelocations\n"
-    "    addl $12, %esp\n"
-    "pic_ret:\n"
-    "    popl %edi\n"
-    "    popl %esi\n"
-    "    popl %ebx\n"
-    "    ret\n"
-);
+VOID PIC_ApplyFixups(UINT32 linkReturnAddress)
+{
+    ULONG_PTR runtimeReturnAddress = (ULONG_PTR)__builtin_return_address(0);
+    UINT32 delta = (UINT32)runtimeReturnAddress - linkReturnAddress;
+    const UINT32 *reloc = (const UINT32 *)(ULONG_PTR)((ULONG_PTR)pic_reloc + delta);
+    UINT32 textSize = *(const UINT32 *)(ULONG_PTR)((ULONG_PTR)&pic_text_size + delta);
+
+    PIC_ApplyRelocations(delta, reloc, textSize);
+}
+
 #endif

@@ -82,10 +82,6 @@ jobs:
           BUILD_NUMBER=$(git rev-list --count HEAD)
           COMMIT_HASH=$(git rev-parse --short=8 HEAD)
           DEFS="-DLOGGING_ENABLED"
-          PIC_DEFS=""
-          if [ "${{ matrix.arch }}" = "i386" ]; then
-            PIC_DEFS="-DPIC_RELOCATIONS_ENABLED"
-          fi
           EXE=minimal_agent.exe
           BIN=minimal_agent.bin
           echo "=== building windows-${{ matrix.arch }}-${{ matrix.flavor }} (${{ matrix.triple }}-g++) ==="
@@ -96,7 +92,7 @@ jobs:
           # whose PE linker accepts /merge rather than GNU ld's -T.
             rm -rf obj
             mkdir -p obj
-            ${{ matrix.triple }}-g++ -O2 -Iinclude $DEFS $PIC_DEFS \
+            ${{ matrix.triple }}-g++ -O2 -Iinclude $DEFS \
               -fno-builtin -fno-asynchronous-unwind-tables -fno-stack-protector -mno-stack-arg-probe -fno-jump-tables -fno-vectorize -fno-slp-vectorize ${{ matrix.extra }} \
               -DID_BUILD_NUMBER="$BUILD_NUMBER" \
               -DAGENT_COMMIT_HASH="\"$COMMIT_HASH\"" \
