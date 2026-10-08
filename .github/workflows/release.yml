@@ -64,7 +64,7 @@ jobs:
         run: |
           BUILD_NUMBER=$(git rev-list --count HEAD)
           COMMIT_HASH=$(git rev-parse --short=8 HEAD)
-          DEFS="-DLOGGING_ENABLED"
+          DEFS=""
           EXE=minimal_agent.exe
           BIN=minimal_agent.bin
           echo "=== building windows-${{ matrix.arch }}-${{ matrix.flavor }} (${{ matrix.triple }}-g++) ==="
