@@ -139,11 +139,20 @@ USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE])
     BuildClientFeaturesHeaderPrefix(piece);
     WriteText(&w, piece);
 
-    CHAR hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    //CHAR hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     CapabilityMask mask = BuildCapabilityMask();
     
-    for (USIZE i = 0; w.ok && i < CAPABILITY_MASK_BYTES; i++) {
-        CHAR byte[3] = {hex[mask.Bits[i] >> 4], hex[mask.Bits[i] & 0xF], '\0'};
+     for (USIZE i = 0; w.ok && i < CAPABILITY_MASK_BYTES; i++) {
+        unsigned char val = mask.Bits[i];
+        unsigned char hi = val >> 4;
+        unsigned char lo = val & 0xF;
+
+        CHAR byte[3] = {
+            static_cast<CHAR>((hi < 10) ? ('0' + hi) : ('a' + hi - 10)),
+            static_cast<CHAR>((lo < 10) ? ('0' + lo) : ('a' + lo - 10)),
+            '\0'
+        };
+
         WriteText(&w, byte);
     }
     WriteText(&w, "\r\n");
