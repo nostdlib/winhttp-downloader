@@ -12,12 +12,13 @@
 
 typedef struct {
     shell_slot *shells;
-    INT32 verbose;
     const WINHTTP_API *winhttp;
-} agent_ctx;
+} Context;
 
-DWORD Handle_ShellOpen(const agent_ctx *ctx, UINT32 corr_id, unsigned char *reply, DWORD *reply_len);
-DWORD Handle_ShellWrite(const agent_ctx *ctx, const incoming_message *msg, UINT32 corr_id, unsigned char *reply, DWORD *reply_len);
-DWORD Handle_ShellRead(const agent_ctx *ctx, const incoming_message *msg, UINT32 corr_id, unsigned char *reply, DWORD *reply_len);
-DWORD Handle_ShellClose(const agent_ctx *ctx, const incoming_message *msg, UINT32 corr_id, unsigned char *reply, DWORD *reply_len);
-USIZE Handle_IdentityHeaders(CHAR headers[IDENTITY_HEADERS_SIZE]);
+typedef VOID (*CommandHandler)(PCHAR command, USIZE commandLength, PPCHAR response, PUSIZE responseLength, Context *context);
+
+VOID Handle_ReadShellCommand(PCHAR command, USIZE commandLength, PPCHAR response, PUSIZE responseLength, Context *context);
+VOID Handle_WriteShellCommand(PCHAR command, USIZE commandLength, PPCHAR response, PUSIZE responseLength, Context *context);
+VOID Handle_OpenShellCommand(PCHAR command, USIZE commandLength, PPCHAR response, PUSIZE responseLength, Context *context);
+VOID Handle_CloseShellCommand(PCHAR command, USIZE commandLength, PPCHAR response, PUSIZE responseLength, Context *context);
+USIZE Handle_IdentityHeadersCommand(CHAR headers[IDENTITY_HEADERS_SIZE], const CHAR *sessionKey);

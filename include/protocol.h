@@ -2,16 +2,21 @@
 
 #include "types.h"
 
-#define CMD_OPEN_SHELL          0x01
-#define CMD_WRITE_SHELL         0x02
-#define CMD_READ_SHELL          0x03
-#define CMD_CLOSE_SHELL         0x04
-#define CMD_LIST_DIRECTORY      0x05
-#define CMD_READ_FILE           0x06
-#define CMD_HASH_FILE           0x07
-#define CMD_GET_DISPLAYS        0x08
-#define CMD_GET_SCREENSHOT      0x09
-#define CMD_EXIT                0x0A
+enum CommandType : UINT8
+{
+    Command_OpenShell = 1,
+    Command_WriteShell = 2,
+    Command_ReadShell = 3,
+    Command_CloseShell = 4,
+    Command_GetDirectoryContent = 5,
+    Command_GetFileContent = 6,
+    Command_GetFileChunkHash = 7,
+    Command_GetDisplays = 8,
+    Command_GetScreenshot = 9,
+    Command_Exit = 10,
+    CommandTypeCount
+};
+
 
 #define CAPABILITY_MASK_BYTES   8
 

@@ -44,6 +44,7 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
+        "src/random.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -81,6 +82,7 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
+        "src/random.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -118,6 +120,7 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
+        "src/random.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -158,6 +161,7 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
+        "src/random.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],
@@ -196,6 +200,7 @@
         "src/memory.cc",
         "src/peb.cc",
         "src/system.cc",
+        "src/random.cc",
         "src/logger.cc",
         "src/commands.cc"
       ],

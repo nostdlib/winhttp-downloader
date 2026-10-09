@@ -151,7 +151,7 @@ static inline VOID BuildDefaultCommitHash(PCHAR buf)
     *(volatile CHAR *)&buf[8] = 0;
 }
 
-static inline VOID BuildApiVersionHeader(PCHAR buf)
+static inline VOID BuildApiVersionHeaderPrefix(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -168,12 +168,10 @@ static inline VOID BuildApiVersionHeader(PCHAR buf)
     *(volatile CHAR *)&buf[12] = 'n';
     *(volatile CHAR *)&buf[13] = ':';
     *(volatile CHAR *)&buf[14] = ' ';
-    *(volatile CHAR *)&buf[15] = '0' + AGENT_API_VERSION;
-    *(volatile CHAR *)&buf[16] = '\r';
-    *(volatile CHAR *)&buf[17] = '\n';
-    *(volatile CHAR *)&buf[18] = 0;
+    *(volatile CHAR *)&buf[15] = 0;
 }
-static inline VOID BuildAgentNameIdHeader(PCHAR buf)
+
+static inline VOID BuildClientIdHeaderPrefix(PCHAR buf)
 {
     *(volatile CHAR *)&buf[0] = 'X';
     *(volatile CHAR *)&buf[1] = '-';
@@ -188,10 +186,7 @@ static inline VOID BuildAgentNameIdHeader(PCHAR buf)
     *(volatile CHAR *)&buf[10] = 'd';
     *(volatile CHAR *)&buf[11] = ':';
     *(volatile CHAR *)&buf[12] = ' ';
-    *(volatile CHAR *)&buf[13] = '0' + AGENT_NAME_ID;
-    *(volatile CHAR *)&buf[14] = '\r';
-    *(volatile CHAR *)&buf[15] = '\n';
-    *(volatile CHAR *)&buf[16] = 0;
+    *(volatile CHAR *)&buf[13] = 0;
 }
 
 static inline VOID BuildPlatformHeader(PCHAR buf)
@@ -215,9 +210,7 @@ static inline VOID BuildPlatformHeader(PCHAR buf)
     *(volatile CHAR *)&buf[16] = 'o';
     *(volatile CHAR *)&buf[17] = 'w';
     *(volatile CHAR *)&buf[18] = 's';
-    *(volatile CHAR *)&buf[19] = '\r';
-    *(volatile CHAR *)&buf[20] = '\n';
-    *(volatile CHAR *)&buf[21] = 0;
+    *(volatile CHAR *)&buf[19] = 0;
 }
 
 
@@ -294,6 +287,27 @@ static inline VOID BuildHostnameHeaderPrefix(PCHAR buf)
     *(volatile CHAR *)&buf[16] = ':';
     *(volatile CHAR *)&buf[17] = ' ';
     *(volatile CHAR *)&buf[18] = 0;
+}
+
+static inline VOID BuildHexDigits(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = '0';
+    *(volatile CHAR *)&buf[1] = '1';
+    *(volatile CHAR *)&buf[2] = '2';
+    *(volatile CHAR *)&buf[3] = '3';
+    *(volatile CHAR *)&buf[4] = '4';
+    *(volatile CHAR *)&buf[5] = '5';
+    *(volatile CHAR *)&buf[6] = '6';
+    *(volatile CHAR *)&buf[7] = '7';
+    *(volatile CHAR *)&buf[8] = '8';
+    *(volatile CHAR *)&buf[9] = '9';
+    *(volatile CHAR *)&buf[10] = 'a';
+    *(volatile CHAR *)&buf[11] = 'b';
+    *(volatile CHAR *)&buf[12] = 'c';
+    *(volatile CHAR *)&buf[13] = 'd';
+    *(volatile CHAR *)&buf[14] = 'e';
+    *(volatile CHAR *)&buf[15] = 'f';
+    *(volatile CHAR *)&buf[16] = 0;
 }
 
 static inline VOID BuildUsernameHeaderPrefix(PCHAR buf)
@@ -548,4 +562,176 @@ static inline VOID BuildArm64ArchitectureHeaders(PCHAR buf)
     *(volatile CHAR *)&buf[51] = (0x38u ^ key);
     *(volatile CHAR *)&buf[52] = (0x3Fu ^ key);
     *(volatile CHAR *)&*(volatile WCHAR *)&buf[53] = 0;
+}
+
+static inline VOID BuildHeaderNewline(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = '\r';
+    *(volatile CHAR *)&buf[1] = '\n';
+    *(volatile CHAR *)&buf[2] = 0;
+}
+
+static inline VOID BuildDeviceIdHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'D';
+    *(volatile CHAR *)&buf[3] = 'e';
+    *(volatile CHAR *)&buf[4] = 'v';
+    *(volatile CHAR *)&buf[5] = 'i';
+    *(volatile CHAR *)&buf[6] = 'c';
+    *(volatile CHAR *)&buf[7] = 'e';
+    *(volatile CHAR *)&buf[8] = '-';
+    *(volatile CHAR *)&buf[9] = 'I';
+    *(volatile CHAR *)&buf[10] = 'd';
+    *(volatile CHAR *)&buf[11] = ':';
+    *(volatile CHAR *)&buf[12] = ' ';
+    *(volatile CHAR *)&buf[13] = 0;
+}
+
+static inline VOID BuildSessionIdHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'S';
+    *(volatile CHAR *)&buf[3] = 'e';
+    *(volatile CHAR *)&buf[4] = 's';
+    *(volatile CHAR *)&buf[5] = 's';
+    *(volatile CHAR *)&buf[6] = 'i';
+    *(volatile CHAR *)&buf[7] = 'o';
+    *(volatile CHAR *)&buf[8] = 'n';
+    *(volatile CHAR *)&buf[9] = '-';
+    *(volatile CHAR *)&buf[10] = 'I';
+    *(volatile CHAR *)&buf[11] = 'd';
+    *(volatile CHAR *)&buf[12] = ':';
+    *(volatile CHAR *)&buf[13] = ' ';
+    *(volatile CHAR *)&buf[14] = 0;
+}
+
+static inline VOID BuildDeviceNameHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'D';
+    *(volatile CHAR *)&buf[3] = 'e';
+    *(volatile CHAR *)&buf[4] = 'v';
+    *(volatile CHAR *)&buf[5] = 'i';
+    *(volatile CHAR *)&buf[6] = 'c';
+    *(volatile CHAR *)&buf[7] = 'e';
+    *(volatile CHAR *)&buf[8] = '-';
+    *(volatile CHAR *)&buf[9] = 'N';
+    *(volatile CHAR *)&buf[10] = 'a';
+    *(volatile CHAR *)&buf[11] = 'm';
+    *(volatile CHAR *)&buf[12] = 'e';
+    *(volatile CHAR *)&buf[13] = ':';
+    *(volatile CHAR *)&buf[14] = ' ';
+    *(volatile CHAR *)&buf[15] = 0;
+}
+
+static inline VOID BuildUserIdHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'U';
+    *(volatile CHAR *)&buf[3] = 's';
+    *(volatile CHAR *)&buf[4] = 'e';
+    *(volatile CHAR *)&buf[5] = 'r';
+    *(volatile CHAR *)&buf[6] = '-';
+    *(volatile CHAR *)&buf[7] = 'I';
+    *(volatile CHAR *)&buf[8] = 'd';
+    *(volatile CHAR *)&buf[9] = ':';
+    *(volatile CHAR *)&buf[10] = ' ';
+    *(volatile CHAR *)&buf[11] = 0;
+}
+
+static inline VOID BuildDeviceArchitectureHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'D';
+    *(volatile CHAR *)&buf[3] = 'e';
+    *(volatile CHAR *)&buf[4] = 'v';
+    *(volatile CHAR *)&buf[5] = 'i';
+    *(volatile CHAR *)&buf[6] = 'c';
+    *(volatile CHAR *)&buf[7] = 'e';
+    *(volatile CHAR *)&buf[8] = '-';
+    *(volatile CHAR *)&buf[9] = 'A';
+    *(volatile CHAR *)&buf[10] = 'r';
+    *(volatile CHAR *)&buf[11] = 'c';
+    *(volatile CHAR *)&buf[12] = 'h';
+    *(volatile CHAR *)&buf[13] = ':';
+    *(volatile CHAR *)&buf[14] = ' ';
+    *(volatile CHAR *)&buf[15] = 0;
+}
+
+static inline VOID BuildAppArchitectureHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'A';
+    *(volatile CHAR *)&buf[3] = 'p';
+    *(volatile CHAR *)&buf[4] = 'p';
+    *(volatile CHAR *)&buf[5] = '-';
+    *(volatile CHAR *)&buf[6] = 'A';
+    *(volatile CHAR *)&buf[7] = 'r';
+    *(volatile CHAR *)&buf[8] = 'c';
+    *(volatile CHAR *)&buf[9] = 'h';
+    *(volatile CHAR *)&buf[10] = ':';
+    *(volatile CHAR *)&buf[11] = ' ';
+    *(volatile CHAR *)&buf[12] = 0;
+}
+
+static inline VOID BuildArchitectureName(PCHAR buf)
+{
+#if defined(ENVIRONMENT_x86_64) || defined(__x86_64__) || defined(_M_X64)
+    *(volatile CHAR *)&buf[0] = 'x';
+    *(volatile CHAR *)&buf[1] = '8';
+    *(volatile CHAR *)&buf[2] = '6';
+    *(volatile CHAR *)&buf[3] = '_';
+    *(volatile CHAR *)&buf[4] = '6';
+    *(volatile CHAR *)&buf[5] = '4';
+    *(volatile CHAR *)&buf[6] = 0;
+#elif defined(ENVIRONMENT_ARM64) || defined(__aarch64__) || defined(_M_ARM64)
+    *(volatile CHAR *)&buf[0] = 'a';
+    *(volatile CHAR *)&buf[1] = 'a';
+    *(volatile CHAR *)&buf[2] = 'r';
+    *(volatile CHAR *)&buf[3] = 'c';
+    *(volatile CHAR *)&buf[4] = 'h';
+    *(volatile CHAR *)&buf[5] = '6';
+    *(volatile CHAR *)&buf[6] = '4';
+    *(volatile CHAR *)&buf[7] = 0;
+#elif defined(ENVIRONMENT_ARM32) || defined(__arm__) || defined(_M_ARM)
+    *(volatile CHAR *)&buf[0] = 'a';
+    *(volatile CHAR *)&buf[1] = 'r';
+    *(volatile CHAR *)&buf[2] = 'm';
+    *(volatile CHAR *)&buf[3] = 0;
+#else
+    *(volatile CHAR *)&buf[0] = 'i';
+    *(volatile CHAR *)&buf[1] = '3';
+    *(volatile CHAR *)&buf[2] = '8';
+    *(volatile CHAR *)&buf[3] = '6';
+    *(volatile CHAR *)&buf[4] = 0;
+#endif
+}
+
+static inline VOID BuildClientCommitHeaderPrefix(PCHAR buf)
+{
+    *(volatile CHAR *)&buf[0] = 'X';
+    *(volatile CHAR *)&buf[1] = '-';
+    *(volatile CHAR *)&buf[2] = 'C';
+    *(volatile CHAR *)&buf[3] = 'l';
+    *(volatile CHAR *)&buf[4] = 'i';
+    *(volatile CHAR *)&buf[5] = 'e';
+    *(volatile CHAR *)&buf[6] = 'n';
+    *(volatile CHAR *)&buf[7] = 't';
+    *(volatile CHAR *)&buf[8] = '-';
+    *(volatile CHAR *)&buf[9] = 'C';
+    *(volatile CHAR *)&buf[10] = 'o';
+    *(volatile CHAR *)&buf[11] = 'm';
+    *(volatile CHAR *)&buf[12] = 'm';
+    *(volatile CHAR *)&buf[13] = 'i';
+    *(volatile CHAR *)&buf[14] = 't';
+    *(volatile CHAR *)&buf[15] = ':';
+    *(volatile CHAR *)&buf[16] = ' ';
+    *(volatile CHAR *)&buf[17] = 0;
 }
