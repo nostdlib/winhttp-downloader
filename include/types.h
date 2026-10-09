@@ -72,6 +72,7 @@ typedef unsigned int USIZE, *PUSIZE;
 typedef unsigned long long USIZE, *PUSIZE;
 #endif
 typedef char CHAR, *PCHAR;
+typedef PCHAR *PPCHAR;
 typedef PVOID HINTERNET;
 typedef int BOOL;
 typedef long NTSTATUS;

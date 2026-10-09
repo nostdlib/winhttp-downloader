@@ -101,7 +101,7 @@ jobs:
               src/transport.cc src/shell.cc src/system_facts.cc \
               src/environment.cc src/winhttp_api.cc src/ntdll.cc src/kernel32.cc \
               src/advapi.cc src/string.cc src/memory.cc src/peb.cc \
-              src/system.cc src/logger.cc src/commands.cc
+              src/system.cc src/random.cc src/logger.cc src/commands.cc
             mv ./*.o obj/
             objects=(obj/entry.o)
             for object in obj/*.o; do
